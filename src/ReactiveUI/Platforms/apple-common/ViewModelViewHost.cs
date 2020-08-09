@@ -111,7 +111,7 @@ namespace ReactiveUI
 
         private static void Adopt(NSViewController parent, NSViewController? child)
         {
-            if (child == null)
+            if (child?.View == null || parent.View == null)
             {
                 return;
             }
@@ -153,7 +153,7 @@ namespace ReactiveUI
 #if UIKIT
             child.WillMoveToParentViewController(null);
 #endif
-            child.View.RemoveFromSuperview();
+            child.View?.RemoveFromSuperview();
             child.RemoveFromParentViewController();
         }
 

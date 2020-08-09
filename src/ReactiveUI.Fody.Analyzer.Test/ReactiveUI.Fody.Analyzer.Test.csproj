@@ -14,7 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ReactiveUI.Fody.Analyzer\ReactiveUI.Fody.Analyzer.csproj" />
     <ProjectReference Include="..\ReactiveUI.Fody.Helpers\ReactiveUI.Fody.Helpers.csproj" />
-    <ProjectReference Include="..\ReactiveUI.Fody\ReactiveUI.Fody.csproj" />
+    <ProjectReference Include="..\ReactiveUI.Fody\ReactiveUI.Fody.PropertyChanged.csproj" />
     <ProjectReference Include="..\ReactiveUI\ReactiveUI.csproj" />
   </ItemGroup>
 </Project>

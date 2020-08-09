@@ -40,6 +40,16 @@ namespace ReactiveUI
             Func<ReactiveCollectionViewSource<TSource>, IDisposable>? initSource = null)
             where TCell : UICollectionViewCell
         {
+            if (sectionsObservable is null)
+            {
+                throw new ArgumentNullException(nameof(sectionsObservable));
+            }
+
+            if (collectionView is null)
+            {
+                throw new ArgumentNullException(nameof(collectionView));
+            }
+
             var source = new ReactiveCollectionViewSource<TSource>(collectionView);
             initSource?.Invoke(source);
 
@@ -69,6 +79,21 @@ namespace ReactiveUI
             Func<ReactiveCollectionViewSource<TSource>, IDisposable>? initSource = null)
             where TCell : UICollectionViewCell
         {
+            if (sourceObservable is null)
+            {
+                throw new ArgumentNullException(nameof(sourceObservable));
+            }
+
+            if (collectionView is null)
+            {
+                throw new ArgumentNullException(nameof(collectionView));
+            }
+
+            if (cellKey is null)
+            {
+                throw new ArgumentNullException(nameof(cellKey));
+            }
+
             return sourceObservable
                 .Select(
                     src => new[]
@@ -102,6 +127,11 @@ namespace ReactiveUI
             Func<ReactiveCollectionViewSource<TSource>, IDisposable>? initSource = null)
             where TCell : UICollectionViewCell
         {
+            if (sourceObservable is null)
+            {
+                throw new ArgumentNullException(nameof(sourceObservable));
+            }
+
             if (collectionView == null)
             {
                 throw new ArgumentNullException(nameof(collectionView));

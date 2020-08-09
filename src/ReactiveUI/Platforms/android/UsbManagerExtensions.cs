@@ -78,16 +78,16 @@ namespace ReactiveUI
                 _device = device;
             }
 
-            public override void OnReceive(Context context, Intent intent)
+            public override void OnReceive(Context? context, Intent? intent)
             {
-                var extraDevice = intent.GetParcelableExtra(UsbManager.ExtraDevice) as UsbDevice;
+                var extraDevice = intent?.GetParcelableExtra(UsbManager.ExtraDevice) as UsbDevice;
                 if (_device.DeviceName != extraDevice?.DeviceName)
                 {
                     return;
                 }
 
-                var permissionGranted = intent.GetBooleanExtra(UsbManager.ExtraPermissionGranted, false);
-                _observer.OnNext(permissionGranted);
+                var permissionGranted = intent?.GetBooleanExtra(UsbManager.ExtraPermissionGranted, false);
+                _observer.OnNext(permissionGranted == true);
                 _observer.OnCompleted();
             }
         }
@@ -107,16 +107,16 @@ namespace ReactiveUI
                 _accessory = accessory;
             }
 
-            public override void OnReceive(Context context, Intent intent)
+            public override void OnReceive(Context? context, Intent? intent)
             {
-                var extraAccessory = intent.GetParcelableExtra(UsbManager.ExtraAccessory) as UsbAccessory;
-                if (_accessory.Manufacturer != extraAccessory?.Manufacturer || _accessory.Model != extraAccessory.Model)
+                var extraAccessory = intent?.GetParcelableExtra(UsbManager.ExtraAccessory) as UsbAccessory;
+                if (_accessory.Manufacturer != extraAccessory?.Manufacturer || _accessory.Model != extraAccessory?.Model)
                 {
                     return;
                 }
 
-                var permissionGranted = intent.GetBooleanExtra(UsbManager.ExtraPermissionGranted, false);
-                _observer.OnNext(permissionGranted);
+                var permissionGranted = intent?.GetBooleanExtra(UsbManager.ExtraPermissionGranted, false);
+                _observer.OnNext(permissionGranted == true);
                 _observer.OnCompleted();
             }
         }

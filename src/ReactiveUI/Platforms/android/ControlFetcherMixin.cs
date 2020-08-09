@@ -24,8 +24,8 @@ namespace ReactiveUI
         private static readonly ConcurrentDictionary<Assembly, Dictionary<string, int>> _controlIds
             = new ConcurrentDictionary<Assembly, Dictionary<string, int>>();
 
-        private static readonly ConditionalWeakTable<object, Dictionary<string, View>> viewCache
-            = new ConditionalWeakTable<object, Dictionary<string, View>>();
+        private static readonly ConditionalWeakTable<object, Dictionary<string, View?>> viewCache
+            = new ConditionalWeakTable<object, Dictionary<string, View?>>();
 
         /// <summary>
         /// Gets the control from an activity.
@@ -33,8 +33,15 @@ namespace ReactiveUI
         /// <param name="activity">The activity.</param>
         /// <param name="propertyName">The property name.</param>
         /// <returns>The return view.</returns>
-        public static View GetControl(this Activity activity, [CallerMemberName] string? propertyName = null)
-            => GetCachedControl(propertyName, activity, () => activity.FindViewById(GetControlIdByName(activity.GetType().Assembly, propertyName)));
+        public static View? GetControl(this Activity activity, [CallerMemberName] string? propertyName = null)
+        {
+            if (activity is null)
+            {
+                throw new ArgumentNullException(nameof(activity));
+            }
+
+            return GetCachedControl(propertyName, activity, () => activity.FindViewById(GetControlIdByName(activity.GetType().Assembly, propertyName)));
+        }
 
         /// <summary>
         /// Gets the control from a view.
@@ -43,8 +50,20 @@ namespace ReactiveUI
         /// <param name="assembly">The assembly containing the user-defined view.</param>
         /// <param name="propertyName">The property.</param>
         /// <returns>The return view.</returns>
-        public static View GetControl(this View view, Assembly assembly, [CallerMemberName] string? propertyName = null)
-            => GetCachedControl(propertyName, view, () => view.FindViewById(GetControlIdByName(assembly, propertyName)));
+        public static View? GetControl(this View view, Assembly assembly, [CallerMemberName] string? propertyName = null)
+        {
+            if (view is null)
+            {
+                throw new ArgumentNullException(nameof(view));
+            }
+
+            if (assembly is null)
+            {
+                throw new ArgumentNullException(nameof(assembly));
+            }
+
+            return GetCachedControl(propertyName, view, () => view.FindViewById(GetControlIdByName(assembly, propertyName)));
+        }
 
         /// <summary>
         /// Wires a control to a property.
@@ -86,9 +105,7 @@ namespace ReactiveUI
                 throw new ArgumentNullException(nameof(view));
             }
 
-            var members = view.GetWireUpMembers(resolveMembers);
-
-            foreach (var member in members)
+            foreach (var member in view.GetWireUpMembers(resolveMembers))
             {
                 try
                 {
@@ -152,9 +169,7 @@ namespace ReactiveUI
                 throw new ArgumentNullException(nameof(activity));
             }
 
-            var members = activity.GetWireUpMembers(resolveMembers);
-
-            foreach (var member in members)
+            foreach (var member in activity.GetWireUpMembers(resolveMembers))
             {
                 try
                 {
@@ -197,7 +212,7 @@ namespace ReactiveUI
             return resourceNameOverride ?? member.Name;
         }
 
-        private static View GetCachedControl(string? propertyName, object rootView, Func<View> fetchControlFromView)
+        private static View? GetCachedControl(string? propertyName, object rootView, Func<View?> fetchControlFromView)
         {
             if (propertyName == null)
             {
@@ -206,7 +221,7 @@ namespace ReactiveUI
 
             var ourViewCache = viewCache.GetOrCreateValue(rootView);
 
-            if (ourViewCache.TryGetValue(propertyName, out View ret))
+            if (ourViewCache.TryGetValue(propertyName, out var ret))
             {
                 return ret;
             }

@@ -25,7 +25,12 @@ namespace ReactiveUI
     {
         internal static void ActivateSubviews(this NSViewController @this, bool activate)
         {
-            @this.View.ActivateSubviews(activate);
+            if (@this is null)
+            {
+                throw new ArgumentNullException(nameof(@this));
+            }
+
+            @this.View?.ActivateSubviews(activate);
         }
 
         private static void ActivateSubviews(this NSView @this, bool activate)

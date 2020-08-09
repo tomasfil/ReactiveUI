@@ -108,38 +108,48 @@ namespace ReactiveUI
                 _this = @this;
             }
 
-            public void OnActivityCreated(Activity activity, Bundle savedInstanceState)
+            public void OnActivityCreated(Activity? activity, Bundle? savedInstanceState)
             {
+                if (savedInstanceState == null)
+                {
+                    return;
+                }
+
                 _this._onCreate.OnNext(savedInstanceState);
             }
 
-            public void OnActivityResumed(Activity activity)
+            public void OnActivityResumed(Activity? activity)
             {
                 _this._onRestart.OnNext(Unit.Default);
             }
 
-            public void OnActivitySaveInstanceState(Activity activity, Bundle outState)
+            public void OnActivitySaveInstanceState(Activity? activity, Bundle? outState)
             {
+                if (outState == null)
+                {
+                    return;
+                }
+
                 // NB: This is so that we always have a bundle on OnCreate, so that
                 // we can tell the difference between created from scratch and resume.
                 outState.PutString("___dummy_value_please_create_a_bundle", "VeryYes");
                 _this._onSaveInstanceState.OnNext(outState);
             }
 
-            public void OnActivityPaused(Activity activity)
+            public void OnActivityPaused(Activity? activity)
             {
                 _this._onPause.OnNext(Unit.Default);
             }
 
-            public void OnActivityDestroyed(Activity activity)
+            public void OnActivityDestroyed(Activity? activity)
             {
             }
 
-            public void OnActivityStarted(Activity activity)
+            public void OnActivityStarted(Activity? activity)
             {
             }
 
-            public void OnActivityStopped(Activity activity)
+            public void OnActivityStopped(Activity? activity)
             {
             }
         }

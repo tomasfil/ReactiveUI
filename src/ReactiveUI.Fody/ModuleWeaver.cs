@@ -3,54 +3,45 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
+using System.Text;
+
 using Fody;
 
 namespace ReactiveUI.Fody
 {
     /// <summary>
-    /// ReactiveUI module weaver.
+    /// Contains the main module weaver for the ReactiveUI Fodys.
     /// </summary>
-    /// <seealso cref="BaseModuleWeaver" />
-    public class ModuleWeaver : BaseModuleWeaver
+    public partial class ModuleWeaver : BaseModuleWeaver
     {
         /// <inheritdoc/>
         public override void Execute()
         {
-            var propertyWeaver = new ReactiveUIPropertyWeaver
-            {
-                ModuleDefinition = ModuleDefinition,
-                LogInfo = WriteInfo,
-                LogError = WriteError
-            };
-            propertyWeaver.Execute();
-
-            var observableAsPropertyWeaver = new ObservableAsPropertyWeaver
-            {
-                ModuleDefinition = ModuleDefinition,
-                LogInfo = WriteInfo,
-                FindType = FindTypeDefinition
-            };
-            observableAsPropertyWeaver.Execute();
-
-            var reactiveDependencyWeaver = new ReactiveDependencyPropertyWeaver
-            {
-                ModuleDefinition = ModuleDefinition,
-                LogInfo = WriteInfo,
-                LogError = WriteError
-            };
-            reactiveDependencyWeaver.Execute();
+            GetTypes();
+            BuildTypeNodes();
+            ProcessPropertyChangedTypes();
         }
 
         /// <inheritdoc/>
         public override IEnumerable<string> GetAssembliesForScanning()
         {
             yield return "mscorlib";
-            yield return "netstandard";
             yield return "System";
             yield return "System.Runtime";
+            yield return "System.Core";
+            yield return "netstandard";
+            yield return "System.Collections";
+            yield return "System.ObjectModel";
+            yield return "System.Threading";
+            yield return "FSharp.Core";
             yield return "ReactiveUI";
             yield return "ReactiveUI.Fody.Helpers";
+
+            // TODO: remove when move to only netstandard2.0
+            yield return "System.Diagnostics.Tools";
+            yield return "System.Diagnostics.Debug";
         }
     }
 }

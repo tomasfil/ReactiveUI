@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<xs:complexType xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:attribute name="SuppressWarnings" type="xs:boolean">
+    <xs:annotation>
+      <xs:documentation>Used to turn off build warnings from this weaver.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+</xs:complexType>
