@@ -21,7 +21,18 @@ namespace ReactiveUI.Fody
         {
             GetTypes();
             BuildTypeNodes();
-            ProcessPropertyChangedTypes();
+            foreach (var node in ReactiveObjects)
+            {
+                var typeDefinition = node.TypeDefinition!;
+
+                WriteDebug("\t" + typeDefinition.FullName);
+
+                foreach (var propertyData in node.PropertyDatas)
+                {
+                    ProcessPropertyChanged(node, propertyData);
+                    ProcessDependency(node, propertyData);
+                }
+            }
         }
 
         /// <inheritdoc/>

@@ -4,8 +4,7 @@
   <xs:element name="Weavers">
     <xs:complexType>
       <xs:all>
-        <xs:element name="ReactiveUI" minOccurs="0" maxOccurs="1" type="xs:anyType" />
-        <xs:element name="ReactiveUI.Fody.PropertyChanged" minOccurs="0" maxOccurs="1">
+        <xs:element name="ReactiveUI" minOccurs="0" maxOccurs="1">
           <xs:complexType>
             <xs:attribute name="SuppressWarnings" type="xs:boolean">
               <xs:annotation>

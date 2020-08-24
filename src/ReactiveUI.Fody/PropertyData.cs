@@ -19,7 +19,5 @@ namespace ReactiveUI.Fody
         public FieldReference? BackingFieldReference { get; }
 
         public PropertyDefinition PropertyDefinition { get; }
-
-        public MethodReference? EqualsMethod { get; set; }
     }
 }

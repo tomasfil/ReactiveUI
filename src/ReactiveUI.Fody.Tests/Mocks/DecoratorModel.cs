@@ -30,6 +30,9 @@ namespace ReactiveUI.Fody.Tests
         [Reactive]
         public string? SomeCoolNewProperty { get; set; }
 
+        [Reactive]
+        public string SomeCoolNewPropertyWithInitialize { get; set; } = "Hello World";
+
         // Works with private fields
         [ReactiveDependency(nameof(_model))]
         public override string? StringProperty { get; set; }

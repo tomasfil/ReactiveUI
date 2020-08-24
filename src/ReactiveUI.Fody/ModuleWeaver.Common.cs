@@ -27,6 +27,8 @@ namespace ReactiveUI.Fody
 
         internal MethodReference? GeneratedCodeAttributeConstructor { get; private set; }
 
+        internal MethodReference? RaisePropertyChanged { get; private set; }
+
         internal void BuildTypeNodes()
         {
             ReactiveObjects.Clear();
@@ -44,21 +46,15 @@ namespace ReactiveUI.Fody
                 throw new InvalidOperationException("Could not find ReactiveUI.IReactiveObjectExtensions");
             }
 
-            var extensionsReference = ModuleDefinition.ImportReference(extensionsType);
-
-            if (extensionsReference == null)
-            {
-                throw new InvalidOperationException("Could not find ReactiveUI.IReactiveObjectExtensions");
-            }
+            var extensionsReference = ModuleDefinition.ImportReference(extensionsType) ?? throw new InvalidOperationException("Could not find ReactiveUI.IReactiveObjectExtensions");
 
             var raiseAndSetIfChangedMethod = ModuleDefinition.ImportReference(extensionsType.GetMethods().FirstOrDefault(x => x.IsStatic && x.Name == "RaiseAndSetIfChanged"));
 
-            if (raiseAndSetIfChangedMethod == null)
-            {
-                throw new InvalidOperationException("Could not find RaiseAndSetIfChanged on ReactiveUI.IReactiveObjectExtensions");
-            }
+            RaiseAndSetIfChangedMethod = raiseAndSetIfChangedMethod ?? throw new InvalidOperationException("Could not find RaiseAndSetIfChanged on ReactiveUI.IReactiveObjectExtensions");
 
-            RaiseAndSetIfChangedMethod = raiseAndSetIfChangedMethod;
+            var raisePropertyChangedMethod = ModuleDefinition.ImportReference(extensionsType.GetMethods().FirstOrDefault(x => x.Name == "RaisePropertyChanged"));
+
+            RaisePropertyChanged = raisePropertyChangedMethod ?? throw new InvalidOperationException("Could not find RaisePropertyChanged on ReactiveUI.IReactiveObjectExtensions");
 
             var debuggerNonUserCodeType = FindTypeDefinition("System.Diagnostics.DebuggerNonUserCodeAttribute");
             var debuggerNonUserCodeConstructor = debuggerNonUserCodeType.GetConstructors().Single(c => !c.HasParameters);

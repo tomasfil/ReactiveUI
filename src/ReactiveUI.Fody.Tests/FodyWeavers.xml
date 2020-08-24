@@ -5,5 +5,5 @@ The .NET Foundation licenses this file to you under the MIT license.
 See the LICENSE file in the project root for more information.
 -->
 <Weavers xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="FodyWeavers.xsd">
-  <ReactiveUI.Fody.PropertyChanged />
+  <ReactiveUI />
 </Weavers>

@@ -29,22 +29,6 @@
     <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS'))">
-    <Reference Include="System.Runtime.Serialization" />    
-  </ItemGroup>
-
-  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.TVOS10'))">
-    <Reference Include="System.Runtime.Serialization" />    
-  </ItemGroup>
-
-  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.Mac'))">
-    <Reference Include="System.Runtime.Serialization" />    
-  </ItemGroup>
-
-  <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid'))">
-    <Reference Include="System.Runtime.Serialization" />    
-  </ItemGroup>
-  
   <ItemGroup Condition="$(TargetFramework.StartsWith('netcoreapp'))">
     <PackageReference Include="System.ComponentModel" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />

@@ -8,6 +8,7 @@ using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
+using Mono.Collections.Generic;
 
 namespace ReactiveUI.Fody
 {
@@ -16,6 +17,11 @@ namespace ReactiveUI.Fody
         public static string GetName(this PropertyDefinition propertyDefinition)
         {
             return $"{propertyDefinition.DeclaringType.FullName}.{propertyDefinition.Name}";
+        }
+
+        public static Instruction GetCall(this MethodDefinition method)
+        {
+            return Instruction.Create(method.IsVirtual ? OpCodes.Callvirt : OpCodes.Call, method);
         }
 
         public static MethodReference MakeGeneric(this MethodReference self, params TypeReference[] arguments)
@@ -39,6 +45,73 @@ namespace ReactiveUI.Fody
             }
 
             return reference;
+        }
+
+        public static void RemoveAttributes(this ICustomAttributeProvider member, params string[] attributeNames)
+        {
+            if (!member.HasCustomAttributes)
+            {
+                return;
+            }
+
+            var attributes = member.CustomAttributes
+                .Where(attribute => attributeNames.Contains(attribute.Constructor.DeclaringType.FullName));
+
+            foreach (var customAttribute in attributes.ToList())
+            {
+                member.CustomAttributes.Remove(customAttribute);
+            }
+        }
+
+        public static List<IndexMetadata> FindSetFieldInstructions(this Collection<Instruction> instructions, FieldReference backingField)
+        {
+            var indexes = new List<IndexMetadata>();
+
+            for (var index = 0; index < instructions.Count; index++)
+            {
+                var instruction = instructions[index];
+                if (instruction.OpCode == OpCodes.Stfld)
+                {
+                    if (!(instruction.Operand is FieldReference fieldReference1))
+                    {
+                        continue;
+                    }
+
+                    if (fieldReference1.Name == backingField?.Name)
+                    {
+                        indexes.Add(new IndexMetadata(index, 1));
+                    }
+
+                    continue;
+                }
+
+                if (instruction.OpCode != OpCodes.Ldflda)
+                {
+                    continue;
+                }
+
+                if (instruction.Next == null)
+                {
+                    continue;
+                }
+
+                if (instruction.Next.OpCode != OpCodes.Initobj)
+                {
+                    continue;
+                }
+
+                if (!(instruction.Operand is FieldReference fieldReference2))
+                {
+                    continue;
+                }
+
+                if (fieldReference2.Name == backingField?.Name)
+                {
+                    indexes.Add(new IndexMetadata(index, 2));
+                }
+            }
+
+            return indexes;
         }
 
         public static bool ContainsAttribute(this IEnumerable<CustomAttribute> attributes, string attributeName)
