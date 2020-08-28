@@ -29,6 +29,10 @@ namespace ReactiveUI.Fody
 
         internal MethodReference? RaisePropertyChanged { get; private set; }
 
+        internal TypeReference? ObservableAsPropertyHelperType { get; private set; }
+
+        internal MethodReference? ToFodyProperty { get; private set; }
+
         internal void BuildTypeNodes()
         {
             ReactiveObjects.Clear();
@@ -63,6 +67,13 @@ namespace ReactiveUI.Fody
             var generatedCodeType = FindTypeDefinition("System.CodeDom.Compiler.GeneratedCodeAttribute");
             var generatedCodeAttributeConstructor = generatedCodeType.GetConstructors().Single(c => c.Parameters.Count == 2 && c.Parameters.All(p => p.ParameterType.Name == "String"));
             GeneratedCodeAttributeConstructor = ModuleDefinition.ImportReference(generatedCodeAttributeConstructor);
+
+            if (!TryFindTypeDefinition("ReactiveUI.ObservableAsPropertyHelper`1", out var observableAsPropertyHelperType))
+            {
+                throw new InvalidOperationException("Could not find ReactiveUI.ObservableAsPropertyHelper`1");
+            }
+
+            ObservableAsPropertyHelperType = ModuleDefinition.ImportReference(observableAsPropertyHelperType);
         }
 
         private static bool IsIReactiveObject(TypeDefinition typeDefinition)

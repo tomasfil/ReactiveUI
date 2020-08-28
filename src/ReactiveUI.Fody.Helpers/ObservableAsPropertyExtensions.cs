@@ -32,6 +32,7 @@ namespace ReactiveUI.Fody.Helpers
         /// or
         /// Backing field not found for " + propertyInfo.
         /// </exception>
+        [Obsolete("Use ObservableAsPropertyExtensions.ToFodyProperty()")]
         public static ObservableAsPropertyHelper<TRet> ToPropertyEx<TObj, TRet>(this IObservable<TRet> item, TObj source, Expression<Func<TObj, TRet>> property, TRet initialValue = default, bool deferSubscription = false, IScheduler? scheduler = null)
             where TObj : ReactiveObject
         {
@@ -63,6 +64,28 @@ namespace ReactiveUI.Fody.Helpers
             field.SetValue(source, result);
 
             return result;
+        }
+
+        /// <summary>
+        /// To the property execute.
+        /// </summary>
+        /// <typeparam name="TObj">The type of the object.</typeparam>
+        /// <typeparam name="TRet">The type of the ret.</typeparam>
+        /// <param name="item">The observable with the return value.</param>
+        /// <param name="source">The source.</param>
+        /// <param name="propertyName">The property name.</param>
+        /// <param name="initialValue">The initial value.</param>
+        /// <param name="deferSubscription">if set to <c>true</c> [defer subscription].</param>
+        /// <param name="scheduler">The scheduler.</param>
+        /// <exception cref="Exception">
+        /// Could not resolve expression " + property + " into a property.
+        /// or
+        /// Backing field not found for " + propertyInfo.
+        /// </exception>
+        public static void ToFodyProperty<TObj, TRet>(this IObservable<TRet> item, TObj source, string propertyName, TRet initialValue = default, bool deferSubscription = false, IScheduler? scheduler = null)
+            where TObj : class, IReactiveObject
+        {
+            throw new NotImplementedException("This should be replaced by the FODY.");
         }
 
         private static PropertyInfo GetPropertyInfo(this LambdaExpression expression)

@@ -32,6 +32,8 @@ namespace ReactiveUI.Fody
                     ProcessPropertyChanged(node, propertyData);
                     ProcessDependency(node, propertyData);
                 }
+
+                ProcessObservableAsPropertyHelper(node);
             }
         }
 

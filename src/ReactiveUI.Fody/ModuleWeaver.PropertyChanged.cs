@@ -58,6 +58,7 @@ namespace ReactiveUI.Fody
             if (propertyData.BackingFieldReference == null)
             {
                 WriteError($"Property {propertyData.PropertyDefinition.FullName} has no valid backing field and therefore is not suitable for ReactiveAttribute weaving.");
+                return;
             }
 
             ExecutePropertyChanged(propertyData, typeNode.TypeDefinition);

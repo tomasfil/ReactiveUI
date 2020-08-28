@@ -11,6 +11,7 @@ namespace ReactiveUI.Fody.Helpers
     /// Attribute that marks an ObservableAsPropertyHelper for weaving.
     /// </summary>
     /// <seealso cref="System.Attribute" />
+    [Obsolete("No longer used. Will pick it up from ToFodyProperty().")]
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method)]
     public class ObservableAsPropertyAttribute : Attribute
     {

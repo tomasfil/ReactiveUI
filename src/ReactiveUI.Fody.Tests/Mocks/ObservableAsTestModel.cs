@@ -17,10 +17,11 @@ namespace ReactiveUI.Fody.Tests
     {
         public ObservableAsTestModel()
         {
-            Observable.Return("foo").ToPropertyEx(this, x => x.TestProperty);
+            var observable = Observable.Return("foo");
+
+            observable.ToFodyProperty(this, nameof(TestProperty));
         }
 
-        [ObservableAsProperty]
         public string? TestProperty { get; private set; }
     }
 }
