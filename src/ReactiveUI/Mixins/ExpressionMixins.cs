@@ -23,9 +23,9 @@ namespace ReactiveUI
         /// Gets all the chain of child expressions within a Expression.
         /// Handles property member accesses, objects and indexes.
         /// </summary>
-        /// <param name="this">The expression.</param>
+        /// <param name="expression">The expression.</param>
         /// <returns>An enumerable of expressions.</returns>
-        public static IEnumerable<Expression> GetExpressionChain(this Expression @this)
+        public static IEnumerable<Expression> GetExpressionChain(this Expression expression)
         {
             if (@this is null)
             {
@@ -33,9 +33,9 @@ namespace ReactiveUI
             }
 
             var expressions = new List<Expression>();
-            var node = @this;
+            var node = expression;
 
-            while (node.NodeType != ExpressionType.Parameter)
+            while (node != null && node.NodeType != ExpressionType.Parameter)
             {
                 switch (node.NodeType)
                 {

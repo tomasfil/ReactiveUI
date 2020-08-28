@@ -70,7 +70,7 @@ namespace ReactiveUI
     {
         private readonly Subject<Unit> _activated = new Subject<Unit>();
         private readonly Subject<Unit> _deactivated = new Subject<Unit>();
-        private readonly Subject<(int requestCode, Result resultCode, Intent? intent)> _activityResult = new Subject<(int, Result, Intent?)>();
+        private readonly Subject<(int requestCode, Result resultCode, Intent? intent)> _activityResult = new Subject<(int requestCode, Result resultCode, Intent? intent)>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ReactiveActivity"/> class.
@@ -155,7 +155,7 @@ namespace ReactiveUI
         /// <param name="intent">The intent.</param>
         /// <param name="requestCode">The request code.</param>
         /// <returns>A task with the result and the intent.</returns>
-        public Task<(Result resultCode, Intent? intent)> StartActivityForResultAsync(Intent intent, int requestCode)
+        public Task<(Result resultCode, Intent? intent)> StartActivityForResultAsync(Intent? intent, int requestCode)
         {
             // NB: It's important that we set up the subscription *before* we
             // call ActivityForResult

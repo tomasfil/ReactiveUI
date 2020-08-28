@@ -10,9 +10,12 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
+
 using Android.App;
 using Android.OS;
+
 using Java.Lang;
+
 using Splat;
 
 namespace ReactiveUI
@@ -22,10 +25,10 @@ namespace ReactiveUI
     /// </summary>
     public class AutoSuspendHelper : IEnableLogger, IDisposable
     {
-        private readonly Subject<Bundle> _onCreate = new Subject<Bundle>();
+        private readonly Subject<Bundle?> _onCreate = new Subject<Bundle?>();
         private readonly Subject<Unit> _onRestart = new Subject<Unit>();
         private readonly Subject<Unit> _onPause = new Subject<Unit>();
-        private readonly Subject<Bundle> _onSaveInstanceState = new Subject<Bundle>();
+        private readonly Subject<Bundle?> _onSaveInstanceState = new Subject<Bundle?>();
 
         private bool _disposedValue; // To detect redundant calls
 
@@ -132,7 +135,11 @@ namespace ReactiveUI
 
                 // NB: This is so that we always have a bundle on OnCreate, so that
                 // we can tell the difference between created from scratch and resume.
-                outState.PutString("___dummy_value_please_create_a_bundle", "VeryYes");
+                if (outState != null)
+                {
+                    outState.PutString("___dummy_value_please_create_a_bundle", "VeryYes");
+                }
+
                 _this._onSaveInstanceState.OnNext(outState);
             }
 
