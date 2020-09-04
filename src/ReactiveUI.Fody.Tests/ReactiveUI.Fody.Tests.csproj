@@ -6,33 +6,18 @@
     <FodyTargetFramework Condition=" $(TargetFramework.StartsWith('net4')) ">$(TargetFramework)</FodyTargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
+    <DisableFody>true</DisableFody>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ReactiveUI.Fody\ReactiveUI.Fody.csproj" ReferenceOutputAssembly="False" />
+    <ProjectReference Include="..\ReactiveUI.Fody.TestAssemblies\ReactiveUI.Fody.Tests.OAPHAssembly\ReactiveUI.Fody.Tests.OAPHAssembly.csproj" />
+    <ProjectReference Include="..\ReactiveUI.Fody\ReactiveUI.Fody.csproj" />
     <ProjectReference Include="..\ReactiveUI.Fody.Helpers\ReactiveUI.Fody.Helpers.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+    <ProjectReference Include="..\ReactiveUI\ReactiveUI.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="API\**\*.txt" CopyToOutputDirectory="PreserveNewest" LinkBase="/" />
   </ItemGroup>
 
-  <ItemGroup>
-    <WeaverFiles Include="..\ReactiveUI.Fody\bin\$(Configuration)\$(FodyTargetFramework)\ReactiveUI.Fody.*" />
-  </ItemGroup>
-  <Target Name="CopyWeavers" BeforeTargets="Build">
-
-    <!-- Fody expects to find weavers in referenced NuGet packages or the Tools directory at the solution level.
-         Since this is for testing purposes before a NuGet package is created, we'll just use the Tools directory
-         until the projects are setup as suggested here: https://github.com/Fody/BasicFodyAddin -->
-    <Copy SourceFiles="@(WeaverFiles)" DestinationFolder="..\Tools" SkipUnchangedFiles="false" />
-  </Target>
 </Project>

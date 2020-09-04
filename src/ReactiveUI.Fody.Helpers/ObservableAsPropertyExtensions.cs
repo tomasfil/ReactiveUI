@@ -73,8 +73,7 @@ namespace ReactiveUI.Fody.Helpers
         /// <typeparam name="TRet">The type of the ret.</typeparam>
         /// <param name="item">The observable with the return value.</param>
         /// <param name="source">The source.</param>
-        /// <param name="propertyName">The property name.</param>
-        /// <param name="initialValue">The initial value.</param>
+        /// <param name="property">The property name.</param>
         /// <param name="deferSubscription">if set to <c>true</c> [defer subscription].</param>
         /// <param name="scheduler">The scheduler.</param>
         /// <exception cref="Exception">
@@ -82,8 +81,18 @@ namespace ReactiveUI.Fody.Helpers
         /// or
         /// Backing field not found for " + propertyInfo.
         /// </exception>
-        public static void ToFodyProperty<TObj, TRet>(this IObservable<TRet> item, TObj source, string propertyName, TRet initialValue = default, bool deferSubscription = false, IScheduler? scheduler = null)
+        public static void ToFodyProperty<TObj, TRet>(this IObservable<TRet> item, TObj source, Func<TObj, TRet> property, bool deferSubscription = false, IScheduler? scheduler = null)
             where TObj : class, IReactiveObject
+        {
+            throw new NotImplementedException("This should be replaced by the FODY.");
+        }
+
+        /// <summary>
+        /// To the property execute.
+        /// </summary>
+        /// <param name="property">The property name.</param>
+        /// <typeparam name="TObj">The type of the source object.</typeparam>
+        public static void ToFodyProperty<TObj>(Func<TObj, object> property)
         {
             throw new NotImplementedException("This should be replaced by the FODY.");
         }

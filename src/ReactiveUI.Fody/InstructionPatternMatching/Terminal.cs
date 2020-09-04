@@ -9,7 +9,7 @@ using System.Text;
 
 using Mono.Cecil.Cil;
 
-namespace ReactiveUI.Fody.InstructionPatternMatching
+namespace ReactiveUI.Fody
 {
-    internal delegate string Terminal(Instruction instruction, ILProcessor ilProcessor);
+    internal delegate string? Terminal(Instruction instruction, ILProcessor ilProcessor);
 }

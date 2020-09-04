@@ -135,5 +135,14 @@ namespace ReactiveUI.Fody
                 current = current.BaseType?.Resolve();
             }
         }
+
+        public static IEnumerable<Instruction> AsReverseEnumerable(this Instruction instruction)
+        {
+            yield return instruction;
+            while (instruction.Previous != null)
+            {
+                yield return instruction = instruction.Previous;
+            }
+        }
     }
 }

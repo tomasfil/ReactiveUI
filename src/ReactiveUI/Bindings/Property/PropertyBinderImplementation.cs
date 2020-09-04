@@ -336,7 +336,7 @@ namespace ReactiveUI
 
             if (viewExpression.GetParent().NodeType == ExpressionType.Parameter)
             {
-                setObservable = changeObservable.Select(x => (TValue)SetThenGet(target, x, viewExpression.GetArgumentsArray()) !);
+                setObservable = changeObservable.Select(x => (TValue)SetThenGet(target, x, viewExpression.GetArgumentsArray())!);
             }
             else
             {

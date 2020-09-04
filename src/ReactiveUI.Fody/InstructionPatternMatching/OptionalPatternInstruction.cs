@@ -9,7 +9,7 @@ using System.Text;
 
 using Mono.Cecil.Cil;
 
-namespace ReactiveUI.Fody.InstructionPatternMatching
+namespace ReactiveUI.Fody
 {
     internal class OptionalPatternInstruction : PatternInstruction
     {

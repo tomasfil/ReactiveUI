@@ -9,7 +9,7 @@ using System.Text;
 
 using Mono.Cecil.Cil;
 
-namespace ReactiveUI.Fody.InstructionPatternMatching
+namespace ReactiveUI.Fody
 {
-    internal delegate bool Predicate(Instruction instruction, ILProcessor ilProcessor);
+    internal delegate bool InstructionPredicate(Instruction instruction, ILProcessor ilProcessor);
 }

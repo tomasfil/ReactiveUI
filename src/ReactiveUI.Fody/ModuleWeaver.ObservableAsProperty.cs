@@ -26,17 +26,13 @@ namespace ReactiveUI.Fody
 
             foreach (var method in typeDefinition.Methods.Where(x => x.HasBody))
             {
-                ProcessMethod(method);
+                ProcessMethod(typeNode, method);
             }
         }
 
-        private void ProcessMethod(MethodDefinition method)
+        private void ProcessMethod(TypeNode typeNode, MethodDefinition method)
         {
             method.Body.SimplifyMacros();
-
-            var list = new List<IndexMetadata>();
-
-            bool hasSome = false;
 
             for (int i = 0; i < method.Body.Instructions.Count; ++i)
             {
@@ -56,26 +52,73 @@ namespace ReactiveUI.Fody
                     continue;
                 }
 
-                hasSome = true;
+                var instructions = instruction.AsReverseEnumerable();
+
+                List<Instruction> patternInstructions = new List<Instruction>();
+                foreach (var patternInstruction in instructions)
+                {
+                    if (patternInstruction.OpCode == OpCodes.Newobj && patternInstruction.Operand is MethodReference patternMethod)
+                    {
+                        break;
+                    }
+
+                    patternInstructions.Add(patternInstruction);
+                }
             }
-
-            if (hasSome == false)
-            {
-                return;
-            }
-
-            WriteWarning("========== Start Method " + method.FullName);
-
-            for (int i = 0; i < method.Body.Instructions.Count; ++i)
-            {
-                var instruction = method.Body.Instructions[i];
-
-                WriteWarning(instruction.ToString());
-            }
-
-            WriteWarning("========== End Method " + method.FullName);
 
             method.Body.OptimizeMacros();
+        }
+
+        private string? GetNameFromExpressionMethod(MethodDefinition method, Instruction anonymousMethodCallInstruction, ILProcessor ilProcessor)
+        {
+            var instruction = ((MethodDefinition)anonymousMethodCallInstruction.Operand).Body.Instructions.Last();
+            Instruction? terminalInstruction = null;
+            var pattern = ObservableAsPropertyPatterns.LambdaPropertyFunc;
+            var iterator = instruction;
+            bool patternIsNotMatched = false;
+            Terminal? terminal = null;
+            foreach (var patternInstruction in pattern.Reverse())
+            {
+                if (patternInstruction is OptionalPatternInstruction && !patternInstruction.EligibleOpCodes.Contains(iterator.OpCode))
+                {
+                    continue;
+                }
+
+                if (!patternInstruction.EligibleOpCodes.Contains(iterator.OpCode) || !patternInstruction.IsPredicated(iterator, ilProcessor))
+                {
+                    patternIsNotMatched = true;
+                    break;
+                }
+
+                if (patternInstruction.Terminal != null)
+                {
+                    terminalInstruction = iterator;
+                    terminal = patternInstruction.Terminal;
+                }
+
+                iterator = iterator.Previous;
+            }
+
+            if (patternIsNotMatched)
+            {
+                WriteError($"Method {method.FullName} calls into ToFodyProperty but does not have a valid expression to a Property.");
+                return null;
+            }
+
+            if (terminal == null || terminalInstruction == null)
+            {
+                WriteError($"Method {method.FullName} calls into ToFodyProperty but does not terminate at a valid Property.");
+                return null;
+            }
+
+            var propertyName = terminal(terminalInstruction, ilProcessor);
+            if (propertyName == null)
+            {
+                WriteError($"Method {method.FullName} calls into ToFodyProperty but could not find a valid method call.");
+                return null;
+            }
+
+            return propertyName;
         }
     }
 }

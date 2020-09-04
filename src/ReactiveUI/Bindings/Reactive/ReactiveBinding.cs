@@ -23,6 +23,11 @@ namespace ReactiveUI
             BindingDirection direction,
             IDisposable bindingDisposable)
         {
+            if (viewModel != null)
+            {
+                throw new ArgumentException("The ViewModel is deprecated. Please do not set");
+            }
+
             View = view;
             ViewExpression = viewExpression;
             ViewModelExpression = viewModelExpression;

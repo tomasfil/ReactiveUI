@@ -6,13 +6,13 @@
 using System.Reactive.Linq;
 using ReactiveUI.Fody.Helpers;
 
-namespace ReactiveUI.Fody.Tests.Issues
+namespace ReactiveUI.Fody.Tests
 {
     public class Issue11TestModel : ReactiveObject
     {
         public Issue11TestModel(string myProperty)
         {
-            Observable.Return(myProperty).ToFodyProperty(this, nameof(MyProperty));
+            Observable.Return(myProperty).ToFodyProperty(this, x => x.MyProperty);
         }
 
         public extern string MyProperty

@@ -4,19 +4,24 @@
 // See the LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Reactive.Linq;
-using ReactiveUI.Fody.Helpers;
-using Xunit;
+using System.Text;
 
-namespace ReactiveUI.Fody.Tests.Issues
+using ReactiveUI.Fody.Helpers;
+
+namespace ReactiveUI.Fody.Tests
 {
-    public class Issue11Tests
+    public class Issue13TestModel : ReactiveObject
     {
-        [Fact]
-        public void AllowObservableAsPropertyAttributeOnAccessor()
+        public Issue13TestModel()
         {
-            var model = new Issue11TestModel("foo");
-            Assert.Equal("foo", model.MyProperty);
+            Observable.Return(0.0).ToFodyProperty(this, x => x.P1);
+            this.WhenAnyValue(vm => vm.P1).ToFodyProperty(this, x => x.P2);
         }
+
+        public double P1 { get; }
+
+        public double P2 { get; }
     }
 }

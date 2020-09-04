@@ -9,13 +9,13 @@ using System.Text;
 
 using Mono.Cecil.Cil;
 
-namespace ReactiveUI.Fody.InstructionPatternMatching
+namespace ReactiveUI.Fody
 {
     internal class PatternInstruction
     {
-        private readonly Predicate _predicate;
+        private readonly InstructionPredicate _predicate;
 
-        public PatternInstruction(OpCode[] eligibleOpCodes, Terminal? terminal = null, Predicate? predicate = null)
+        public PatternInstruction(OpCode[] eligibleOpCodes, Terminal? terminal = null, InstructionPredicate? predicate = null)
         {
             if (eligibleOpCodes == null)
             {
@@ -32,7 +32,7 @@ namespace ReactiveUI.Fody.InstructionPatternMatching
             _predicate = predicate ?? PredicateDummy;
         }
 
-        public PatternInstruction(OpCode opCode, Terminal? terminal = null, Predicate? predicate = null)
+        public PatternInstruction(OpCode opCode, Terminal? terminal = null, InstructionPredicate? predicate = null)
             : this(new[] { opCode }, terminal, predicate)
         {
         }
@@ -45,9 +45,9 @@ namespace ReactiveUI.Fody.InstructionPatternMatching
 
         public OpCode[] EligibleOpCodes { get; }
 
-        public Action<Instruction> Action { get; }
+        public Action<Instruction>? Action { get; }
 
-        public Terminal Terminal { get; }
+        public Terminal? Terminal { get; }
 
         public bool IsPredicated(Instruction instruction, ILProcessor ilProcessor)
         {
