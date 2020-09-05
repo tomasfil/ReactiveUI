@@ -14,6 +14,7 @@ namespace ReactiveUI
     {
         private readonly IDisposable _bindingDisposable;
 
+        [Obsolete("This constructor will be removed in the future.")]
         public ReactiveBinding(
             TView view,
             TViewModel? viewModel,
@@ -28,6 +29,23 @@ namespace ReactiveUI
                 throw new ArgumentException("The ViewModel is deprecated. Please do not set");
             }
 
+            View = view;
+            ViewExpression = viewExpression;
+            ViewModelExpression = viewModelExpression;
+            Direction = direction;
+            Changed = changed;
+
+            _bindingDisposable = bindingDisposable;
+        }
+
+        public ReactiveBinding(
+            TView view,
+            Expression viewExpression,
+            Expression viewModelExpression,
+            IObservable<TValue> changed,
+            BindingDirection direction,
+            IDisposable bindingDisposable)
+        {
             View = view;
             ViewExpression = viewExpression;
             ViewModelExpression = viewModelExpression;
