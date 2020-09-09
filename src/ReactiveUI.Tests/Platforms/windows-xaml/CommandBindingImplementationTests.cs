@@ -15,9 +15,9 @@ using Xunit;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 #else
-using FactAttribute = Xunit.WpfFactAttribute;
 using System.Windows.Controls;
 using System.Windows.Input;
+using FactAttribute = Xunit.WpfFactAttribute;
 #endif
 
 namespace ReactiveUI.Tests.Xaml

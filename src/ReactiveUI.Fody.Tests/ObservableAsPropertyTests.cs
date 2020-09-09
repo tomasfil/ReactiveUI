@@ -17,12 +17,12 @@ namespace ReactiveUI.Fody.Tests
             moduleWeaver.ExecuteTestRun("ReactiveUI.Fody.Tests.OAPHAssembly.dll");
         }
 
-        [Fact]
-        public void TestPropertyReturnsFoo()
-        {
-            var model = new ObservableAsTestModel();
-            Assert.Equal("foo", model.TestProperty);
-        }
+        ////[Fact]
+        ////public void TestPropertyReturnsFoo()
+        ////{
+        ////    var model = new ObservableAsTestModel();
+        ////    Assert.Equal("foo", model.TestProperty);
+        ////}
 
         [Fact]
         public void AllowObservableAsPropertyAttributeOnAccessor()

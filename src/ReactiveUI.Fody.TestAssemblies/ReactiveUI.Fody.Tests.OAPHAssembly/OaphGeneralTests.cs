@@ -13,6 +13,10 @@ namespace ReactiveUI.Fody.OAPHAssembly
 {
     public class OaphGeneralTests : ReactiveObject
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "For the test")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "For the test")]
+        public bool TestBoolField;
+
         private readonly Random _random = new Random();
 
         public OaphGeneralTests()
@@ -26,7 +30,11 @@ namespace ReactiveUI.Fody.OAPHAssembly
             GenerateValueTestModel();
             GenerateValueBoxing();
             GenerateStringTest();
+            GenerateUseBoolField();
+            GenerateUseBoolProperty();
         }
+
+        public bool TestBoolPass { get; set; }
 
         public int IntTest { get; set; }
 
@@ -95,6 +103,16 @@ namespace ReactiveUI.Fody.OAPHAssembly
         private void GenerateValueBoxing()
         {
             Observable.Return((object)0).ToFodyProperty(this, x => x.TestBox, GetRandomBool(), new NewThreadScheduler());
+        }
+
+        private void GenerateUseBoolProperty()
+        {
+            Observable.Return(0).ToFodyProperty(this, x => x.IntTest5, TestBoolPass, new NewThreadScheduler());
+        }
+
+        private void GenerateUseBoolField()
+        {
+            Observable.Return(0).ToFodyProperty(this, x => x.IntTest5, TestBoolField, new NewThreadScheduler());
         }
 
         private bool GetRandomBool()
