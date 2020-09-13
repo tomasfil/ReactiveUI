@@ -61,10 +61,14 @@ namespace ReactiveUI.Fody
                 return;
             }
 
-            ExecutePropertyChanged(propertyData, typeNode.TypeDefinition);
+            if (!ExecutePropertyChanged(propertyData, typeNode.TypeDefinition))
+            {
+                WriteError($"Property {propertyData.PropertyDefinition.FullName} could not be find valid backing field and therefore is not suitable for ReactiveAttribute weaving.");
+                return;
+            }
         }
 
-        private static int AddSimpleInvokerCall(IndexMetadata indexMetadata, Collection<Instruction> instructions, FieldReference backingField, PropertyReference property, MethodReference method, TypeDefinition typeDefinition)
+        private static void AddSimpleInvokerCall(IndexMetadata indexMetadata, Collection<Instruction> instructions, FieldReference backingField, PropertyReference property, MethodReference method, TypeDefinition typeDefinition)
         {
             // Remove the current from the set location.
             for (var i = 0; i < indexMetadata.Count; ++i)
@@ -80,7 +84,7 @@ namespace ReactiveUI.Fody
             method = genericMethod;
 
             // Generates this.RaiseAndSetIfChanged(this, this.Field, value, "propertyName");
-            return instructions.Insert(
+            instructions.Insert(
                 indexMetadata.Index,
                 Instruction.Create(OpCodes.Ldarg_0), // this -- for the extension method.
                 Instruction.Create(OpCodes.Ldarg_0), // this -- for the field reference
@@ -112,7 +116,6 @@ namespace ReactiveUI.Fody
             }
 
             var indexes = instructions.FindSetFieldInstructions(backingField);
-            indexes.Reverse();
 
             foreach (var index in indexes)
             {

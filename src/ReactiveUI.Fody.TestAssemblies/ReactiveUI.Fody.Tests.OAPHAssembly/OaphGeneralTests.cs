@@ -17,7 +17,13 @@ namespace ReactiveUI.Fody.OAPHAssembly
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "For the test")]
         public bool TestBoolField;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "For the test")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "For the test")]
+        public int Test = 10;
+
         private readonly Random _random = new Random();
+
+        private ObservableAsPropertyHelper<int>? _nonFodyIntTest;
 
         public OaphGeneralTests()
         {
@@ -37,6 +43,8 @@ namespace ReactiveUI.Fody.OAPHAssembly
         public bool TestBoolPass { get; set; }
 
         public int IntTest { get; set; }
+
+        public int NonFodyIntTest => _nonFodyIntTest?.Value ?? 0;
 
         public TestModel? ModelTest { get; set; }
 
@@ -69,9 +77,14 @@ namespace ReactiveUI.Fody.OAPHAssembly
             Observable.Return(0).ToFodyProperty(this, x => x.IntTest);
         }
 
+        private void GenerateNonFodyPlainOne()
+        {
+            _nonFodyIntTest = Observable.Return(0).ToProperty(this, nameof(NonFodyIntTest), initialValue: Test);
+        }
+
         private void GenerateWithParamsFilled()
         {
-            Observable.Return(0).ToFodyProperty(this, x => x.IntTest2, true, ImmediateScheduler.Instance);
+            Observable.Return(0).ToFodyProperty(this, x => x.IntTest2, deferSubscription: true, scheduler: ImmediateScheduler.Instance);
         }
 
         private void GeneratePremadeFunc()
@@ -82,7 +95,7 @@ namespace ReactiveUI.Fody.OAPHAssembly
 
         private void GenerateRandomInt()
         {
-            Observable.Return(0).ToFodyProperty(this, x => x.IntTest4, true, new NewThreadScheduler());
+            Observable.Return(0).ToFodyProperty(this, x => x.IntTest4, deferSubscription: true, scheduler: new NewThreadScheduler());
         }
 
         private void GenerateRandomBool()
@@ -92,27 +105,27 @@ namespace ReactiveUI.Fody.OAPHAssembly
 
         private void GenerateValueFromDelegate()
         {
-            Observable.Return(0).ToFodyProperty(this, x => x.IntTest5, GetRandomBool(), new NewThreadScheduler());
+            Observable.Return(0).ToFodyProperty(this, x => x.IntTest5, GetRandomBool(), scheduler: new NewThreadScheduler());
         }
 
         private void GenerateValueTestModel()
         {
-            Observable.Return<TestModel>(new TestModel(1111)).ToFodyProperty(this, x => x.ModelTest, true, ImmediateScheduler.Instance);
+            Observable.Return<TestModel>(new TestModel(1111)).ToFodyProperty(this, x => x.ModelTest, deferSubscription: true, scheduler: ImmediateScheduler.Instance);
         }
 
         private void GenerateValueBoxing()
         {
-            Observable.Return((object)0).ToFodyProperty(this, x => x.TestBox, GetRandomBool(), new NewThreadScheduler());
+            Observable.Return((object)0).ToFodyProperty(this, x => x.TestBox, GetRandomBool(), scheduler: new NewThreadScheduler());
         }
 
         private void GenerateUseBoolProperty()
         {
-            Observable.Return(0).ToFodyProperty(this, x => x.IntTest5, TestBoolPass, new NewThreadScheduler());
+            Observable.Return(0).ToFodyProperty(this, x => x.IntTest5, deferSubscription: TestBoolPass, scheduler: new NewThreadScheduler());
         }
 
         private void GenerateUseBoolField()
         {
-            Observable.Return(0).ToFodyProperty(this, x => x.IntTest5, TestBoolField, new NewThreadScheduler());
+            Observable.Return(0).ToFodyProperty(this, x => x.IntTest5, deferSubscription: TestBoolField, scheduler: new NewThreadScheduler());
         }
 
         private bool GetRandomBool()

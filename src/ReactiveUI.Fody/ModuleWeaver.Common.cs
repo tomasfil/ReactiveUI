@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -32,6 +33,12 @@ namespace ReactiveUI.Fody
         internal TypeReference? ObservableAsPropertyHelperType { get; private set; }
 
         internal MethodReference? ToFodyProperty { get; private set; }
+
+        internal MethodReference? ObservableAsPropertyHelperValueGetMethod { get; private set; }
+
+        internal TypeReference? OAPHCreationHelperMixinType { get; private set; }
+
+        internal MethodReference? OAPHCreationHelperMixinToPropertyMethod { get; private set; }
 
         internal void BuildTypeNodes()
         {
@@ -74,6 +81,34 @@ namespace ReactiveUI.Fody
             }
 
             ObservableAsPropertyHelperType = ModuleDefinition.ImportReference(observableAsPropertyHelperType);
+
+            var observableAsPropertyHelperValue = ObservableAsPropertyHelperType.Resolve().Properties.FirstOrDefault(x => x.Name == "Value");
+
+            if (observableAsPropertyHelperValue == null)
+            {
+                throw new InvalidOperationException("Could not find ReactiveUI.ObservableAsPropertyHelper`1.Value");
+            }
+
+            ObservableAsPropertyHelperValueGetMethod = ModuleDefinition.ImportReference(observableAsPropertyHelperValue.GetMethod);
+
+            var oaphCreationHelperMixinType = FindTypeDefinition("ReactiveUI.OAPHCreationHelperMixin");
+
+            if (oaphCreationHelperMixinType == null)
+            {
+                throw new InvalidOperationException("Could not find ReactiveUI.OAPHCreationHelperMixinType");
+            }
+
+            OAPHCreationHelperMixinType = ModuleDefinition.ImportReference(oaphCreationHelperMixinType);
+
+            var toProperty = OAPHCreationHelperMixinType.Resolve().GetMethods().FirstOrDefault(
+                x => x.Name == "ToProperty" && x.Parameters[2].ParameterType.FullName == TypeSystem.StringReference.FullName && !x.Parameters[3].IsOut);
+
+            if (toProperty == null)
+            {
+                throw new InvalidOperationException("Could not find ReactiveUI.OAPHCreationHelperMixinType.ToProperty");
+            }
+
+            OAPHCreationHelperMixinToPropertyMethod = ModuleDefinition.ImportReference(toProperty);
         }
 
         private static bool IsIReactiveObject(TypeDefinition typeDefinition)

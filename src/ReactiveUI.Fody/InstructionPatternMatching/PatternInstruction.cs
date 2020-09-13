@@ -15,8 +15,9 @@ namespace ReactiveUI.Fody
     internal class PatternInstruction
     {
         private readonly Func<Instruction, ILProcessor, bool> _predicate;
+        private readonly Func<Instruction, ILProcessor, string?>? _getName;
 
-        public PatternInstruction(IReadOnlyList<OpCode> eligibleOpCodes, Func<Instruction, ILProcessor, bool>? predicate = null, Func<Instruction, ILProcessor, string?>? nameFunc = null)
+        public PatternInstruction(IReadOnlyList<OpCode> eligibleOpCodes, Func<Instruction, ILProcessor, bool>? predicate = null, bool captureInstruction = false, Func<Instruction, ILProcessor, string?>? getNameFunc = null)
         {
             if (eligibleOpCodes == null)
             {
@@ -29,17 +30,18 @@ namespace ReactiveUI.Fody
             }
 
             EligibleOpCodes = eligibleOpCodes;
-            Name = nameFunc;
+            CaptureInstruction = captureInstruction;
             _predicate = predicate ?? PredicateDummy;
+            _getName = getNameFunc;
         }
 
-        public PatternInstruction(OpCode opCode, Func<Instruction, ILProcessor, bool>? predicate = null, Func<Instruction, ILProcessor, string?>? nameFunc = null)
-            : this(new[] { opCode }, predicate, nameFunc)
+        public PatternInstruction(OpCode opCode, Func<Instruction, ILProcessor, bool>? predicate = null, bool captureInstruction = false)
+            : this(new[] { opCode }, predicate, captureInstruction)
         {
         }
 
         public PatternInstruction(OpCode opCode, Action<Instruction> action)
-            : this(opCode, null, null)
+            : this(opCode, null, false)
         {
             Action = action;
         }
@@ -48,7 +50,12 @@ namespace ReactiveUI.Fody
 
         public Action<Instruction>? Action { get; }
 
-        public Func<Instruction, ILProcessor, string?>? Name { get; }
+        public bool CaptureInstruction { get; }
+
+        public string? GetName(Instruction instruction, ILProcessor processor)
+        {
+            return _getName?.Invoke(instruction, processor);
+        }
 
         public bool IsValid(Instruction instruction, ILProcessor ilProcessor)
         {
@@ -65,6 +72,11 @@ namespace ReactiveUI.Fody
             {
                 return false;
             }
+        }
+
+        public override string ToString()
+        {
+            return string.Join(", ", EligibleOpCodes.Select(x => x.ToString()));
         }
 
         private bool PredicateDummy(Instruction instruction, ILProcessor ilProcessor) => true;

@@ -14,12 +14,12 @@ namespace ReactiveUI.Fody
     internal class OptionalPatternInstruction : PatternInstruction
     {
         public OptionalPatternInstruction(OpCode[] eligibleOpCodes)
-            : base(eligibleOpCodes, null, null)
+            : base(eligibleOpCodes, null, false)
         {
         }
 
         public OptionalPatternInstruction(OpCode opCode)
-            : base(opCode, null, null)
+            : base(opCode, null, false)
         {
         }
     }

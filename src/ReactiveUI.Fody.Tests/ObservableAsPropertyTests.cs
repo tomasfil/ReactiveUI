@@ -11,10 +11,12 @@ namespace ReactiveUI.Fody.Tests
 {
     public class ObservableAsPropertyTests
     {
+        private static TestResult _testResult;
+
         static ObservableAsPropertyTests()
         {
             var moduleWeaver = new ModuleWeaver();
-            moduleWeaver.ExecuteTestRun("ReactiveUI.Fody.Tests.OAPHAssembly.dll");
+            _testResult = moduleWeaver.ExecuteTestRun("ReactiveUI.Fody.Tests.OAPHAssembly.dll", runPeVerify: false);
         }
 
         ////[Fact]

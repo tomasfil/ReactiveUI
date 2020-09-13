@@ -67,21 +67,32 @@ namespace ReactiveUI.Fody.Helpers
         }
 
         /// <summary>
-        /// To the property execute.
+        /// A placeholder for the Fody system.
+        /// It will replace a property, and this call to match ToProperty() on the <seealso cref="OAPHCreationHelperMixin" />,
+        /// and the property to be ObservableAsPropertyHelper.
         /// </summary>
-        /// <typeparam name="TObj">The type of the object.</typeparam>
-        /// <typeparam name="TRet">The type of the ret.</typeparam>
-        /// <param name="item">The observable with the return value.</param>
-        /// <param name="source">The source.</param>
-        /// <param name="property">The property name.</param>
-        /// <param name="deferSubscription">if set to <c>true</c> [defer subscription].</param>
-        /// <param name="scheduler">The scheduler.</param>
-        /// <exception cref="Exception">
-        /// Could not resolve expression " + property + " into a property.
-        /// or
-        /// Backing field not found for " + propertyInfo.
-        /// </exception>
-        public static void ToFodyProperty<TObj, TRet>(this IObservable<TRet> item, TObj source, Func<TObj, TRet> property, bool deferSubscription = false, IScheduler? scheduler = null)
+        /// <typeparam name="TObj">The object type.</typeparam>
+        /// <typeparam name="TRet">The result type.</typeparam>
+        /// <param name="target">
+        /// The observable to convert to an ObservableAsPropertyHelper.
+        /// </param>
+        /// <param name="source">
+        /// The ReactiveObject that has the property.
+        /// </param>
+        /// <param name="property">
+        /// A Func that points towards the property that will reflect the observable value.
+        /// </param>
+        /// <param name="deferSubscription">
+        /// A value indicating whether the <see cref="ObservableAsPropertyHelper{T}"/>
+        /// should defer the subscription to the <paramref name="target"/> source
+        /// until the first call to <see cref="ObservableAsPropertyHelper{T}.Value"/>,
+        /// or if it should immediately subscribe to the <paramref name="target"/> source.
+        /// </param>
+        /// <param name="scheduler">
+        /// The scheduler that the notifications will be provided on - this should normally
+        /// be a Dispatcher-based scheduler.
+        /// </param>
+        public static void ToFodyProperty<TObj, TRet>(this IObservable<TRet> target, TObj source, Func<TObj, TRet> property, bool deferSubscription = false, IScheduler? scheduler = null)
             where TObj : class, IReactiveObject
         {
             throw new NotImplementedException("This should be replaced by the FODY.");

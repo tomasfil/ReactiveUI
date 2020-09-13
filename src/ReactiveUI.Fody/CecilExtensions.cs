@@ -3,6 +3,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
@@ -111,7 +112,40 @@ namespace ReactiveUI.Fody
                 }
             }
 
-            return indexes;
+            return indexes.OrderByDescending(x => x.Index).ToList();
+        }
+
+        /// <summary>
+        /// Binds the generic type definition to a field.
+        /// </summary>
+        /// <param name="field">The field.</param>
+        /// <param name="genericTypeDefinition">The generic type definition.</param>
+        /// <returns>The field bound to the generic type.</returns>
+        public static FieldReference BindDefinition(this FieldReference field, TypeReference genericTypeDefinition)
+        {
+            if (field == null)
+            {
+                throw new ArgumentNullException(nameof(field));
+            }
+
+            if (genericTypeDefinition == null)
+            {
+                throw new ArgumentNullException(nameof(genericTypeDefinition));
+            }
+
+            if (!genericTypeDefinition.HasGenericParameters)
+            {
+                return field;
+            }
+
+            var genericDeclaration = new GenericInstanceType(genericTypeDefinition);
+            foreach (var parameter in genericTypeDefinition.GenericParameters)
+            {
+                genericDeclaration.GenericArguments.Add(parameter);
+            }
+
+            var reference = new FieldReference(field.Name, field.FieldType, genericDeclaration);
+            return reference;
         }
 
         public static bool ContainsAttribute(this IEnumerable<CustomAttribute> attributes, string attributeName)
