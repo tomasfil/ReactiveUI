@@ -48,6 +48,18 @@ namespace ReactiveUI.Fody
             return reference;
         }
 
+        public static MethodReference MakeGenericInstance(this MethodReference self, params TypeReference[] arguments)
+        {
+            var genericInstance = new GenericInstanceMethod(self);
+
+            foreach (var argument in arguments)
+            {
+                genericInstance.GenericArguments.Add(argument);
+            }
+
+            return genericInstance;
+        }
+
         public static void RemoveAttributes(this ICustomAttributeProvider member, params string[] attributeNames)
         {
             if (!member.HasCustomAttributes)

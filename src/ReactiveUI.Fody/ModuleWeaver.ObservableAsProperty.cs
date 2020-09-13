@@ -160,7 +160,7 @@ namespace ReactiveUI.Fody
 
             var oaphType = ObservableAsPropertyHelperType.MakeGenericInstanceType(oldBackingField.FieldType);
 
-            var test = FindInitializer(oldBackingField, constructors);
+            var toPropertyMethodCall = OAPHCreationHelperMixinToPropertyMethod!.MakeGenericInstance(typeDefinition, oldBackingField.FieldType);
 
             // Declare a field to store the property value
             var field = new FieldDefinition("$" + propertyData.PropertyDefinition.Name, FieldAttributes.Private, oaphType);
@@ -168,12 +168,14 @@ namespace ReactiveUI.Fody
 
             instructions.Insert(
                 indexes.Last().Index,
+                Instruction.Create(OpCodes.Ldarg_0), // source = this
+                Instruction.Create(OpCodes.Ldarg_0), // source = this
                 Instruction.Create(OpCodes.Ldstr, propertyData.PropertyDefinition.Name), // Property Name
                 Instruction.Create(OpCodes.Ldarg_0), // source = this
                 Instruction.Create(OpCodes.Ldfld, oldBackingField), // Get old backing field value.
                 delaySubscriptionInstruction, // Copy the delay subscription instruction
                 schedulerInstruction, // Copy the scheduler subscription
-                Instruction.Create(OpCodes.Call, OAPHCreationHelperMixinToPropertyMethod),  // Invoke our OAPH create method.
+                Instruction.Create(OpCodes.Call, toPropertyMethodCall),  // Invoke our OAPH create method.
                 Instruction.Create(OpCodes.Stfld, field));
 
             MakePropertyObservable(propertyData, field, oldBackingField.FieldType);
