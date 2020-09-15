@@ -13,12 +13,12 @@ namespace ReactiveUI.Fody
 {
     internal class OptionalPatternInstruction : PatternInstruction
     {
-        public OptionalPatternInstruction(OpCode[] eligibleOpCodes)
-            : base(eligibleOpCodes, null, false)
+        public OptionalPatternInstruction(IReadOnlyList<OpCode> eligibleOpCodes, Func<Instruction, ILProcessor, bool>? predicate = null, bool captureInstruction = false, Func<Instruction, ILProcessor, string?>? getNameFunc = null)
+            : base(eligibleOpCodes, predicate, captureInstruction, getNameFunc)
         {
         }
 
-        public OptionalPatternInstruction(OpCode opCode)
+        public OptionalPatternInstruction(OpCode opCode, bool capture = false)
             : base(opCode, null, false)
         {
         }

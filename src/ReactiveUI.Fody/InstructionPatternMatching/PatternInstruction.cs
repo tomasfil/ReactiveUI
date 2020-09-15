@@ -52,6 +52,8 @@ namespace ReactiveUI.Fody
 
         public bool CaptureInstruction { get; }
 
+        public bool HasNameFunc => _getName != null;
+
         public string? GetName(Instruction instruction, ILProcessor processor)
         {
             return _getName?.Invoke(instruction, processor);

@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 
 using Mono.Cecil;
@@ -19,32 +20,6 @@ namespace ReactiveUI.Fody
     /// </summary>
     public partial class ModuleWeaver
     {
-        private static readonly PatternInstruction[] _propertyFuncPatterns = new[]
-        {
-            new PatternInstruction(new[] { OpCodes.Ldarg, OpCodes.Ldarg_1 }),
-            new PatternInstruction(PatternHelper.CallOpCodes, predicate: (inst, _) => inst.Operand is MethodDefinition method && method.IsGetter, getNameFunc: (inst, _) => ((MethodDefinition)inst.Operand).Name.Substring(4)),
-            new PatternInstruction(OpCodes.Ret),
-        }.Reverse().ToArray();
-
-        private static readonly PatternInstruction[] _toFodyPropPatterns = new[]
-        {
-            new PatternInstruction(new[] { OpCodes.Ldarg_0, OpCodes.Ldarg }), // This argument.
-            new PatternInstruction(OpCodes.Ldsfld, (instruction, _) => instruction.Operand is FieldReference funcField &&
-                        funcField.FieldType.Name == "Func`2" && funcField.FieldType.Namespace == "System"), // Func<TObj, TProp> field.
-            new PatternInstruction(OpCodes.Dup), // Duplicate the property to test for true/false
-            new PatternInstruction(new[] { OpCodes.Brtrue_S, OpCodes.Brtrue }), // Test to make sure its true.
-            new PatternInstruction(OpCodes.Pop), // Pop the result of the branch test.
-            new PatternInstruction(OpCodes.Ldsfld), // Load static field
-            new PatternInstruction(OpCodes.Ldftn, null, true), // Loading native int.
-            new PatternInstruction(OpCodes.Newobj),
-            new PatternInstruction(OpCodes.Dup),
-            new PatternInstruction(OpCodes.Stsfld),
-            new OptionalPatternInstruction(OpCodes.Ldarg_0),
-            new PatternInstruction(PatternHelper.BooleanOpCodes.Concat(PatternHelper.CallOpCodes).Concat(PatternHelper.LoadFieldOpCodes).ToArray(), captureInstruction: true),
-            new PatternInstruction(new[] { OpCodes.Newobj, OpCodes.Ldnull }.Concat(PatternHelper.CallOpCodes).Concat(PatternHelper.LoadFieldOpCodes).ToArray(), captureInstruction: true),
-            new PatternInstruction(new[] { OpCodes.Call }, (inst, _) => IsToFodyPropertyInstruction(inst))
-        }.Reverse().ToArray();
-
         internal void ProcessObservableAsPropertyHelper(TypeNode typeNode)
         {
             if (ObservableAsPropertyHelperValueGetMethod is null)
@@ -72,62 +47,13 @@ namespace ReactiveUI.Fody
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsToFodyPropertyInstruction(Instruction instruction)
         {
-            if (instruction.OpCode != OpCodes.Call)
-            {
-                return false;
-            }
-
-            if (!(instruction.Operand is MethodReference methodReference))
-            {
-                return false;
-            }
-
-            return methodReference.DeclaringType.FullName == "ReactiveUI.Fody.Helpers.ObservableAsPropertyExtensions"
-                && methodReference.Name == "ToFodyProperty";
-        }
-
-        private static List<Instruction> GetValidInstructions(PatternInstruction[] pattern, ILProcessor ilProcessor, Instruction iterator, int i, out bool patternIsNotMatched, out List<string> namesCaptured, out List<IndexMetadata> indexes)
-        {
-            var captureInstructions = new List<Instruction>();
-            indexes = new List<IndexMetadata>();
-            namesCaptured = new List<string>();
-
-            int current = i;
-            foreach (var patternInstruction in pattern)
-            {
-                if (patternInstruction is OptionalPatternInstruction && !patternInstruction.IsValid(iterator, ilProcessor))
-                {
-                    continue;
-                }
-
-                if (!patternInstruction.IsValid(iterator, ilProcessor))
-                {
-                    patternIsNotMatched = true;
-                    break;
-                }
-
-                if (patternInstruction.CaptureInstruction)
-                {
-                    captureInstructions.Add(iterator);
-                }
-
-                var name = patternInstruction.GetName(iterator, ilProcessor);
-
-                if (name != null && !string.IsNullOrWhiteSpace(name))
-                {
-                    namesCaptured.Add(name);
-                }
-
-                indexes.Add(new IndexMetadata(current, 1));
-                iterator = iterator.Previous;
-                current--;
-            }
-
-            patternIsNotMatched = false;
-
-            return captureInstructions;
+            return instruction.OpCode == OpCodes.Call &&
+                instruction.Operand is MethodReference methodReference &&
+                methodReference.DeclaringType.FullName == "ReactiveUI.Fody.Helpers.ObservableAsPropertyExtensions" &&
+                methodReference.Name == "ToFodyProperty";
         }
 
         private static IEnumerable<Instruction> FindInitializer(FieldDefinition oldFieldDefinition, List<MethodDefinition> constructors)
@@ -143,7 +69,86 @@ namespace ReactiveUI.Fody
             }
         }
 
-        private void CreateObservable(TypeDefinition typeDefinition, MethodDefinition method, List<IndexMetadata> indexes, PropertyData propertyData, Instruction delaySubscriptionInstruction, Instruction schedulerInstruction, List<MethodDefinition> constructors)
+        /// <summary>
+        /// Will get all the instructions for the passed in "methodInstruction" to get its required parameters.
+        /// It will use the instructions pop/push deltas to determine the instructions.
+        /// </summary>
+        /// <example>
+        /// An example input output would be:
+        /// ldc.i4 1
+        /// ldc.i4 2
+        /// add
+        /// 'add' requires two parameters on the evaluation stack. So in this case 'add' would be the methodInstruction
+        /// and the two ldc.i4 would be the parameter instructions.
+        /// It needs to handle more complex cases like loading field or calling methods to get the instructions.
+        /// </example>
+        /// <param name="parentMethodDefinition">The parent where the instruction is located.</param>
+        /// <param name="methodInstruction">The instruction which we want the parameter instructions for.</param>
+        /// <returns>A instruction block which contains the method instruction, and the instructions used for generating its parameters.</returns>
+        private static InstructionBlock? GetDependentInstructions(MethodDefinition parentMethodDefinition, Instruction methodInstruction)
+        {
+            var bodyInstructions = parentMethodDefinition.Body.Instructions;
+
+            if (bodyInstructions == null)
+            {
+                return null;
+            }
+
+            // This method has no parameters from the evaluation stack, return early.
+            if (methodInstruction.GetPopDelta() == 0)
+            {
+                return new InstructionBlock(methodInstruction);
+            }
+
+            // Get the first instruction from the parent method that holds the method instruction.
+            var iterator = bodyInstructions[0];
+
+            if (iterator == null)
+            {
+                return null;
+            }
+
+            // public void Test() // this is the parent.
+            // ldarg.0 // this
+            // ldc.i4 1
+            // ldc.i4 2
+            // callvirt MyClass::Test(int32 a, int32 b)
+
+            // InstructionBlock = instruction = MyClass::Test, parameters = idc.i4, idc.i4, ldarg.0
+            var evaluationStack = new Stack<InstructionBlock>();
+            InstructionBlock? methodBlock = null;
+            while (iterator != null)
+            {
+                var currentBlock = new InstructionBlock(iterator);
+                var iteratorPopDelta = iterator.GetPopDelta();
+                var iteratorPushDelta = iterator.GetPushDelta();
+
+                if (iteratorPopDelta != 0)
+                {
+                    for (int i = 0; i < iteratorPopDelta; ++i)
+                    {
+                        currentBlock.NeededInstructions.Insert(0, evaluationStack.Pop());
+                    }
+                }
+
+                if (iteratorPushDelta != 0)
+                {
+                    evaluationStack.Push(currentBlock);
+                }
+
+                if (iterator == methodInstruction)
+                {
+                    methodBlock = currentBlock;
+                    break;
+                }
+
+                iterator = iterator.Next;
+            }
+
+            return methodBlock;
+        }
+
+        private void CreateObservable(TypeDefinition typeDefinition, MethodDefinition method, PropertyData propertyData, InstructionBlock instructionBlock)
         {
             if (propertyData.BackingFieldReference == null)
             {
@@ -151,9 +156,9 @@ namespace ReactiveUI.Fody
             }
 
             var instructions = method.Body.Instructions;
-            foreach (var index in indexes)
+            foreach (var indexMetadata in indexMetadatas)
             {
-                instructions.RemoveAt(index.Index);
+                instructions.RemoveAt(indexMetadata.Index);
             }
 
             var oldBackingField = propertyData.BackingFieldReference.Resolve();
@@ -166,15 +171,16 @@ namespace ReactiveUI.Fody
             var field = new FieldDefinition("$" + propertyData.PropertyDefinition.Name, FieldAttributes.Private, oaphType);
             typeDefinition.Fields.Add(field);
 
-            instructions.Insert(
-                indexes.Last().Index,
-                Instruction.Create(OpCodes.Ldarg_0), // source = this
-                Instruction.Create(OpCodes.Ldarg_0), // source = this
+            var index = instructions.Insert(
+                indexMetadatas.Last().Index,
                 Instruction.Create(OpCodes.Ldstr, propertyData.PropertyDefinition.Name), // Property Name
                 Instruction.Create(OpCodes.Ldarg_0), // source = this
-                Instruction.Create(OpCodes.Ldfld, oldBackingField), // Get old backing field value.
-                delaySubscriptionInstruction, // Copy the delay subscription instruction
-                schedulerInstruction, // Copy the scheduler subscription
+                Instruction.Create(OpCodes.Ldfld, oldBackingField));
+
+            index = instructions.Insert(index, capturedInstructions);
+
+            instructions.Insert(
+                index,
                 Instruction.Create(OpCodes.Call, toPropertyMethodCall),  // Invoke our OAPH create method.
                 Instruction.Create(OpCodes.Stfld, field));
 
@@ -200,47 +206,40 @@ namespace ReactiveUI.Fody
         {
             method.Body.SimplifyMacros();
 
+            var instructions = method.Body.Instructions;
+
             var ilProcessor = method.Body.GetILProcessor();
 
-            for (int i = 0; i < method.Body.Instructions.Count; ++i)
+            for (int i = 0; i < instructions.Count; ++i)
             {
-                var instruction = method.Body.Instructions[i];
+                var instruction = instructions[i];
                 if (!IsToFodyPropertyInstruction(instruction))
                 {
                     continue;
                 }
 
-                var captureInstructions = GetValidInstructions(_toFodyPropPatterns, ilProcessor, instruction, i, out var patternIsNotMatched, out var _, out var indexes);
+                // Get the instructions for the set property.
+                var instructionBlock = GetDependentInstructions(method, instruction.Next);
 
-                if (patternIsNotMatched)
+                if (instructionBlock == null)
                 {
-                    WriteError($"Method {method.FullName} calls ToFodyProperty() but the property couldn't be matched. Therefore it is ineligible for ToFodyProperty weaving.");
+                    WriteError($"Method {method.FullName} calls ToFodyProperty() but property couldn't be matched. Make sure that you set ToFodyProperty() to a property. It is ineligible for ToFodyProperty weaving.");
                     return;
                 }
 
-                if (captureInstructions.Count != 3)
+                if (!(instructionBlock.Instruction.Operand is MethodDefinition propertyMethod && propertyMethod.IsSetter))
                 {
-                    WriteError($"Method {method.FullName} calls ToFodyProperty() but property couldn't be matched. Therefore it is ineligible for ToFodyProperty weaving.");
+                    WriteError($"Method {method.FullName} calls ToFodyProperty() but property couldn't be matched. Make sure that you set ToFodyProperty() to a property. It is ineligible for ToFodyProperty weaving.");
                     return;
                 }
 
-                var schedulerInstruction = captureInstructions[0];
-                var isDelayedInstruction = captureInstructions[1];
-                var fieldLoadInstruction = captureInstructions[2];
+                var name = propertyMethod.Name;
 
-                if (schedulerInstruction == null || isDelayedInstruction == null || fieldLoadInstruction == null)
-                {
-                    WriteError($"Method {method.FullName} calls ToFodyProperty() but property couldn't be matched. Therefore it is ineligible for ToFodyProperty weaving.");
-                    return;
-                }
-
-                var name = GetNameFromExpressionMethod(fieldLoadInstruction);
-
-                var propertyData = typeNode.PropertyDatas.FirstOrDefault(x => x.PropertyDefinition.Name == name);
+                var propertyData = typeNode.PropertyDatas.Find(x => x.PropertyDefinition.Name == name);
 
                 if (propertyData == null)
                 {
-                    WriteError($"Method {method.FullName} calls ToFodyProperty() but a property couldn't be matched. Therefore it is ineligible ToFodyProperty for weaving.");
+                    WriteError($"Method {method.FullName} calls ToFodyProperty() but property couldn't be matched. Make sure that you set ToFodyProperty() to a property. It is ineligible for ToFodyProperty weaving.");
                     return;
                 }
 
@@ -256,47 +255,28 @@ namespace ReactiveUI.Fody
                     return;
                 }
 
-                CreateObservable(typeNode.TypeDefinition, method, indexes, propertyData, isDelayedInstruction, schedulerInstruction, constructors);
+                CreateObservable(typeNode.TypeDefinition, method, propertyData, instructionBlock);
             }
 
             method.Body.OptimizeMacros();
         }
 
-        private string? GetNameFromExpressionMethod(Instruction anonymousMethodCallInstruction)
+        private class InstructionBlock
         {
-            var method = anonymousMethodCallInstruction.Operand as MethodDefinition;
-
-            if (method == null)
+            public InstructionBlock(Instruction instruction)
             {
-                return null;
+                Instruction = instruction;
+                NeededInstructions = new List<InstructionBlock>(instruction.GetPopDelta());
             }
 
-            var index = method.Body.Instructions.Count - 1;
+            public List<InstructionBlock> NeededInstructions { get; }
 
-            if (index < 0)
+            public Instruction Instruction { get; set; }
+
+            public override string ToString()
             {
-                return null;
+                return $"{Instruction} - ({string.Join(", ", NeededInstructions.Select(x => x.ToString()))})";
             }
-
-            var instruction = method.Body.Instructions[method.Body.Instructions.Count - 1];
-
-            var ilProcessor = method.Body.GetILProcessor();
-
-            GetValidInstructions(_propertyFuncPatterns, ilProcessor, instruction, index, out var patternIsNotMatched, out var namesCaptured, out _);
-
-            if (patternIsNotMatched)
-            {
-                WriteError($"Method {method.FullName} calls into ToFodyProperty but does not have a valid expression to a Property.");
-                return null;
-            }
-
-            if (namesCaptured == null || namesCaptured.Count == 0)
-            {
-                WriteError($"Method {method.FullName} calls into ToFodyProperty but cannot find a valid property name.");
-                return null;
-            }
-
-            return namesCaptured.Last();
         }
     }
 }

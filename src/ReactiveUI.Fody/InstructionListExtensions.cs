@@ -22,6 +22,17 @@ namespace ReactiveUI.Fody
             return index + instructions.Length;
         }
 
+        public static int Insert(this IList<Instruction> collection, int index, IEnumerable<Instruction> instructions)
+        {
+            foreach (var instruction in instructions.Reverse())
+            {
+                collection.Insert(index, instruction);
+                index++;
+            }
+
+            return index;
+        }
+
         public static void Add(this IList<Instruction> collection, params Instruction[] instructions)
         {
             foreach (var instruction in instructions)

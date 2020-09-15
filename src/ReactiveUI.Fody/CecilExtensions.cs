@@ -76,6 +76,121 @@ namespace ReactiveUI.Fody
             }
         }
 
+        /// <summary>
+        /// Determines what ammount of entries does <paramref name="instruction"/> pushes onto the evaluation stack.
+        /// </summary>
+        /// <param name="instruction">The instruction to be analyzed.</param>
+        /// <returns>Returns the number of pushed items.</returns>
+        public static int GetPushDelta(this Instruction instruction)
+        {
+            OpCode code = instruction.OpCode;
+            switch (code.StackBehaviourPush)
+            {
+                case StackBehaviour.Push0:
+                    return 0;
+
+                case StackBehaviour.Push1:
+                case StackBehaviour.Pushi:
+                case StackBehaviour.Pushi8:
+                case StackBehaviour.Pushr4:
+                case StackBehaviour.Pushr8:
+                case StackBehaviour.Pushref:
+                    return 1;
+
+                case StackBehaviour.Push1_push1:
+                    return 2;
+
+                case StackBehaviour.Varpush:
+                    if (code.FlowControl == FlowControl.Call)
+                    {
+                        IMethodSignature method = (IMethodSignature)instruction.Operand;
+                        TypeReference @return = method.ReturnType;
+
+                        return IsVoid(@return) ? 0 : 1;
+                    }
+
+                    break;
+            }
+
+            throw new ArgumentException("Instruction does not have a known stack behavior");
+        }
+
+        /// <summary>
+        /// Determines what amount of stack entries does <paramref name="instruction"/> pop.
+        /// </summary>
+        /// <param name="instruction">The instruction.</param>
+        /// <returns>Returns the number of popped elements.</returns>
+        public static int GetPopDelta(this Instruction instruction)
+        {
+            OpCode code = instruction.OpCode;
+            switch (code.StackBehaviourPop)
+            {
+                case StackBehaviour.Pop0:
+                    return 0;
+                case StackBehaviour.Popi:
+                case StackBehaviour.Popref:
+                case StackBehaviour.Pop1:
+                    return 1;
+
+                case StackBehaviour.Pop1_pop1:
+                case StackBehaviour.Popi_pop1:
+                case StackBehaviour.Popi_popi:
+                case StackBehaviour.Popi_popi8:
+                case StackBehaviour.Popi_popr4:
+                case StackBehaviour.Popi_popr8:
+                case StackBehaviour.Popref_pop1:
+                case StackBehaviour.Popref_popi:
+                    return 2;
+
+                case StackBehaviour.Popi_popi_popi:
+                case StackBehaviour.Popref_popi_popi:
+                case StackBehaviour.Popref_popi_popi8:
+                case StackBehaviour.Popref_popi_popr4:
+                case StackBehaviour.Popref_popi_popr8:
+                case StackBehaviour.Popref_popi_popref:
+                    return 3;
+
+                case StackBehaviour.PopAll:
+                    return -1;
+
+                case StackBehaviour.Varpop:
+                    if (code.FlowControl == FlowControl.Call)
+                    {
+                        IMethodSignature method = (IMethodSignature)instruction.Operand;
+
+                        // All method's arguments are already loaded on the stack
+                        int count = method.Parameters.Count;
+
+                        if (OpCodes.Newobj.Value != code.Value)
+                        {
+                            // If the method has target, then it's also loaded on the stack
+                            if (method.HasThis)
+                            {
+                                ++count;
+                            }
+                        }
+
+                        if (code.Code == Code.Calli)
+                        {
+                            // The reference to the method should be on the top of the stack.
+                            count++;
+                        }
+
+                        return count;
+                    }
+
+                    // After return the stack is empty.
+                    if (code.Code == Code.Ret)
+                    {
+                        return -1;
+                    }
+
+                    break;
+            }
+
+            throw new ArgumentException("The instruction is not known which pop delta");
+        }
+
         public static List<IndexMetadata> FindSetFieldInstructions(this Collection<Instruction> instructions, FieldReference backingField)
         {
             var indexes = new List<IndexMetadata>();
@@ -189,6 +304,33 @@ namespace ReactiveUI.Fody
             {
                 yield return instruction = instruction.Previous;
             }
+        }
+
+        /// <summary>
+        /// Checks if <paramref name="type"/> is void or not.
+        /// </summary>
+        /// <param name="type">The type to be checked.</param>
+        /// <returns>Returns true, if the type is void.</returns>
+        private static bool IsVoid(TypeReference type)
+        {
+            if (type.IsPointer)
+            {
+                // void * is not considered void as void* represents pointer.
+                return false;
+            }
+
+            if (type is IModifierType)
+            {
+                IModifierType? optional = (IModifierType)type;
+                return IsVoid(optional.ElementType);
+            }
+
+            if (type.FullName == "System.Void")
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

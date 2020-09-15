@@ -29,7 +29,6 @@ namespace ReactiveUI.Fody.OAPHAssembly
         {
             GeneratePlainOne();
             GenerateWithParamsFilled();
-            GeneratePremadeFunc();
             GenerateRandomInt();
             GenerateRandomBool();
             GenerateValueFromDelegate();
@@ -58,23 +57,27 @@ namespace ReactiveUI.Fody.OAPHAssembly
 
         public int IntTest5 { get; set; }
 
+        public int IntTest6 { get; set; }
+
+        public int IntTest7 { get; set; }
+
         public string? StringTest { get; set; }
 
         public string StringTest2 { get; set; } = "test";
 
         private void GenerateStringTest()
         {
-            Observable.Return("hello").ToFodyProperty(this, x => x.StringTest);
+            StringTest = Observable.Return("hello").ToFodyProperty();
         }
 
         private void GenerateStringDefaultValue()
         {
-            Observable.Return("hello2").ToFodyProperty(this, x => x.StringTest2);
+            StringTest2 = Observable.Return("hello2").ToFodyProperty();
         }
 
         private void GeneratePlainOne()
         {
-            Observable.Return(0).ToFodyProperty(this, x => x.IntTest);
+            IntTest = Observable.Return(0).ToFodyProperty();
         }
 
         private void GenerateNonFodyPlainOne()
@@ -84,48 +87,42 @@ namespace ReactiveUI.Fody.OAPHAssembly
 
         private void GenerateWithParamsFilled()
         {
-            Observable.Return(0).ToFodyProperty(this, x => x.IntTest2, deferSubscription: true, scheduler: ImmediateScheduler.Instance);
-        }
-
-        private void GeneratePremadeFunc()
-        {
-            Func<OaphGeneralTests, int> toFunc = (method) => method.IntTest3;
-            Observable.Return(0).ToFodyProperty(this, toFunc);
+            IntTest2 = Observable.Return(0).ToFodyProperty(deferSubscription: true, scheduler: ImmediateScheduler.Instance);
         }
 
         private void GenerateRandomInt()
         {
-            Observable.Return(0).ToFodyProperty(this, x => x.IntTest4, deferSubscription: true, scheduler: new NewThreadScheduler());
+            IntTest3 = Observable.Return(0).ToFodyProperty(deferSubscription: true, scheduler: new NewThreadScheduler());
         }
 
         private void GenerateRandomBool()
         {
-            Observable.Return(0).ToFodyProperty(this, x => x.IntTest5, GetRandomBool(), new NewThreadScheduler());
+            IntTest4 = Observable.Return(0).ToFodyProperty(GetRandomBool(), new NewThreadScheduler());
         }
 
         private void GenerateValueFromDelegate()
         {
-            Observable.Return(0).ToFodyProperty(this, x => x.IntTest5, GetRandomBool(), scheduler: new NewThreadScheduler());
+            IntTest5 = Observable.Return(0).ToFodyProperty(GetRandomBool(), scheduler: new NewThreadScheduler());
         }
 
         private void GenerateValueTestModel()
         {
-            Observable.Return<TestModel>(new TestModel(1111)).ToFodyProperty(this, x => x.ModelTest, deferSubscription: true, scheduler: ImmediateScheduler.Instance);
+            ModelTest = Observable.Return<TestModel>(new TestModel(1111)).ToFodyProperty(deferSubscription: true, scheduler: ImmediateScheduler.Instance);
         }
 
         private void GenerateValueBoxing()
         {
-            Observable.Return((object)0).ToFodyProperty(this, x => x.TestBox, GetRandomBool(), scheduler: new NewThreadScheduler());
+            TestBox = Observable.Return((object)0).ToFodyProperty(GetRandomBool(), scheduler: new NewThreadScheduler());
         }
 
         private void GenerateUseBoolProperty()
         {
-            Observable.Return(0).ToFodyProperty(this, x => x.IntTest5, deferSubscription: TestBoolPass, scheduler: new NewThreadScheduler());
+            IntTest6 = Observable.Return(0).ToFodyProperty(deferSubscription: TestBoolPass, scheduler: new NewThreadScheduler());
         }
 
         private void GenerateUseBoolField()
         {
-            Observable.Return(0).ToFodyProperty(this, x => x.IntTest5, deferSubscription: TestBoolField, scheduler: new NewThreadScheduler());
+            IntTest7 = Observable.Return(0).ToFodyProperty(deferSubscription: TestBoolField, scheduler: new NewThreadScheduler());
         }
 
         private bool GetRandomBool()

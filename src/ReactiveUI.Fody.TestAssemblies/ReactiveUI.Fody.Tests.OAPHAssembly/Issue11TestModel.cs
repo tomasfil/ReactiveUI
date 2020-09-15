@@ -12,12 +12,12 @@ namespace ReactiveUI.Fody.Tests
     {
         public Issue11TestModel(string myProperty)
         {
-            Observable.Return(myProperty).ToFodyProperty(this, x => x.MyProperty);
+            MyProperty = Observable.Return(myProperty).ToFodyProperty();
         }
 
         public extern string MyProperty
         {
-            get;
+            get; private set;
         }
     }
 }

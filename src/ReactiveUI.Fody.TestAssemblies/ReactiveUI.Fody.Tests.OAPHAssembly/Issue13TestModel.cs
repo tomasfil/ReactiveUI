@@ -16,12 +16,12 @@ namespace ReactiveUI.Fody.Tests
     {
         public Issue13TestModel()
         {
-            Observable.Return(0.0).ToFodyProperty(this, x => x.P1);
-            this.WhenAnyValue(vm => vm.P1).ToFodyProperty(this, x => x.P2);
+            P1 = Observable.Return(0.0).ToFodyProperty();
+            P2 = this.WhenAnyValue(vm => vm.P1).ToFodyProperty();
         }
 
-        public double P1 { get; }
+        public double P1 { get; private set; }
 
-        public double P2 { get; }
+        public double P2 { get; private set; }
     }
 }

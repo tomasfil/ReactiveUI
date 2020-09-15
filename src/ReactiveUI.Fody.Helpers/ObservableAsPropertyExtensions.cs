@@ -71,16 +71,9 @@ namespace ReactiveUI.Fody.Helpers
         /// It will replace a property, and this call to match ToProperty() on the <seealso cref="OAPHCreationHelperMixin" />,
         /// and the property to be ObservableAsPropertyHelper.
         /// </summary>
-        /// <typeparam name="TObj">The object type.</typeparam>
         /// <typeparam name="TRet">The result type.</typeparam>
         /// <param name="target">
         /// The observable to convert to an ObservableAsPropertyHelper.
-        /// </param>
-        /// <param name="source">
-        /// The ReactiveObject that has the property.
-        /// </param>
-        /// <param name="property">
-        /// A Func that points towards the property that will reflect the observable value.
         /// </param>
         /// <param name="deferSubscription">
         /// A value indicating whether the <see cref="ObservableAsPropertyHelper{T}"/>
@@ -92,18 +85,10 @@ namespace ReactiveUI.Fody.Helpers
         /// The scheduler that the notifications will be provided on - this should normally
         /// be a Dispatcher-based scheduler.
         /// </param>
-        public static void ToFodyProperty<TObj, TRet>(this IObservable<TRet> target, TObj source, Func<TObj, TRet> property, bool deferSubscription = false, IScheduler? scheduler = null)
-            where TObj : class, IReactiveObject
-        {
-            throw new NotImplementedException("This should be replaced by the FODY.");
-        }
-
-        /// <summary>
-        /// To the property execute.
-        /// </summary>
-        /// <param name="property">The property name.</param>
-        /// <typeparam name="TObj">The type of the source object.</typeparam>
-        public static void ToFodyProperty<TObj>(Func<TObj, object> property)
+        /// <returns>
+        /// A return value which should be set to the property we are interested in.
+        /// </returns>
+        public static TRet ToFodyProperty<TRet>(this IObservable<TRet> target, bool deferSubscription = false, IScheduler? scheduler = null)
         {
             throw new NotImplementedException("This should be replaced by the FODY.");
         }

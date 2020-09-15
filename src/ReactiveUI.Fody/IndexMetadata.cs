@@ -36,5 +36,10 @@ namespace ReactiveUI.Fody
             return Index == other.Index &&
                 Count == other.Count;
         }
+
+        public override string ToString()
+        {
+            return $"({Index}, {Count})";
+        }
     }
 }
