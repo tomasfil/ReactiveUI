@@ -56,7 +56,7 @@ namespace ReactiveUI.Fody
                 methodReference.Name == "ToFodyProperty";
         }
 
-        private static IEnumerable<Instruction> FindInitializer(FieldDefinition oldFieldDefinition, List<MethodDefinition> constructors)
+        private static IEnumerable<InstructionBlock> FindInitializer(FieldDefinition oldFieldDefinition, List<MethodDefinition> constructors)
         {
             // See if there exists an initializer for the auto-property
             foreach (var constructor in constructors)
@@ -64,7 +64,12 @@ namespace ReactiveUI.Fody
                 var fieldAssignment = constructor.Body.Instructions.SingleOrDefault(x => Equals(x.Operand, oldFieldDefinition));
                 if (fieldAssignment != null)
                 {
-                    yield return fieldAssignment;
+                    var value = GetDependentInstructions(constructor, fieldAssignment);
+
+                    if (value != null)
+                    {
+                        yield return value;
+                    }
                 }
             }
         }
@@ -97,7 +102,7 @@ namespace ReactiveUI.Fody
             // This method has no parameters from the evaluation stack, return early.
             if (methodInstruction.GetPopDelta() == 0)
             {
-                return new InstructionBlock(methodInstruction);
+                return new InstructionBlock(methodInstruction, parentMethodDefinition, bodyInstructions.IndexOf(methodInstruction));
             }
 
             // Get the first instruction from the parent method that holds the method instruction.
@@ -108,18 +113,12 @@ namespace ReactiveUI.Fody
                 return null;
             }
 
-            // public void Test() // this is the parent.
-            // ldarg.0 // this
-            // ldc.i4 1
-            // ldc.i4 2
-            // callvirt MyClass::Test(int32 a, int32 b)
-
-            // InstructionBlock = instruction = MyClass::Test, parameters = idc.i4, idc.i4, ldarg.0
             var evaluationStack = new Stack<InstructionBlock>();
             InstructionBlock? methodBlock = null;
+            int index = 0;
             while (iterator != null)
             {
-                var currentBlock = new InstructionBlock(iterator);
+                var currentBlock = new InstructionBlock(iterator, parentMethodDefinition, index);
                 var iteratorPopDelta = iterator.GetPopDelta();
                 var iteratorPushDelta = iterator.GetPushDelta();
 
@@ -127,8 +126,13 @@ namespace ReactiveUI.Fody
                 {
                     for (int i = 0; i < iteratorPopDelta; ++i)
                     {
-                        currentBlock.NeededInstructions.Insert(0, evaluationStack.Pop());
+                        if (evaluationStack.Count != 0)
+                        {
+                            currentBlock.NeededInstructions.Add(evaluationStack.Pop());
+                        }
                     }
+
+                    ////currentBlock.NeededInstructions.Reverse();
                 }
 
                 if (iteratorPushDelta != 0)
@@ -143,22 +147,26 @@ namespace ReactiveUI.Fody
                 }
 
                 iterator = iterator.Next;
+                index++;
             }
 
             return methodBlock;
         }
 
-        private void CreateObservable(TypeDefinition typeDefinition, MethodDefinition method, PropertyData propertyData, InstructionBlock instructionBlock)
+        private void CreateObservable(TypeDefinition typeDefinition, MethodDefinition method, PropertyData propertyData, InstructionBlock propertySetInstructionBlock, List<MethodDefinition> constructors)
         {
             if (propertyData.BackingFieldReference == null)
             {
                 return;
             }
 
-            var instructions = method.Body.Instructions;
-            foreach (var indexMetadata in indexMetadatas)
+            var methodInstructions = method.Body.Instructions;
+
+            int index = 0;
+            foreach (var indexMetadata in propertySetInstructionBlock.OrderByDescending(x => x.Index))
             {
-                instructions.RemoveAt(indexMetadata.Index);
+                index = indexMetadata.Index;
+                methodInstructions.RemoveAt(index);
             }
 
             var oldBackingField = propertyData.BackingFieldReference.Resolve();
@@ -171,15 +179,21 @@ namespace ReactiveUI.Fody
             var field = new FieldDefinition("$" + propertyData.PropertyDefinition.Name, FieldAttributes.Private, oaphType);
             typeDefinition.Fields.Add(field);
 
-            var index = instructions.Insert(
-                indexMetadatas.Last().Index,
-                Instruction.Create(OpCodes.Ldstr, propertyData.PropertyDefinition.Name), // Property Name
-                Instruction.Create(OpCodes.Ldarg_0), // source = this
-                Instruction.Create(OpCodes.Ldfld, oldBackingField));
+            var existingProperties = propertySetInstructionBlock.TakeWhile(x => !IsToFodyPropertyInstruction(x.Instruction)).ToList();
 
-            index = instructions.Insert(index, capturedInstructions);
+            ////index = methodInstructions.Insert(index, );
 
-            instructions.Insert(
+            //////index = methodInstructions.Insert(index, setFodyInstructionBlock.GetNeededInstructionEnumerator().Select(x => x.Instruction));
+
+            ////var index = methodInstructions.Insert(
+            ////    indexMetadatas.Last().Index,
+            ////    Instruction.Create(OpCodes.Ldstr, propertyData.PropertyDefinition.Name), // Property Name
+            ////    Instruction.Create(OpCodes.Ldarg_0), // source = this
+            ////    Instruction.Create(OpCodes.Ldfld, oldBackingField));
+
+            ////index = methodInstructions.Insert(index, capturedInstructions);
+
+            methodInstructions.Insert(
                 index,
                 Instruction.Create(OpCodes.Call, toPropertyMethodCall),  // Invoke our OAPH create method.
                 Instruction.Create(OpCodes.Stfld, field));
@@ -218,64 +232,95 @@ namespace ReactiveUI.Fody
                     continue;
                 }
 
-                // Get the instructions for the set property.
-                var instructionBlock = GetDependentInstructions(method, instruction.Next);
-
-                if (instructionBlock == null)
+                var propertySetInstruction = instruction.Next;
+                if (propertySetInstruction == null || !(propertySetInstruction.Operand is MethodDefinition propertyMethod && propertyMethod.IsSetter))
                 {
-                    WriteError($"Method {method.FullName} calls ToFodyProperty() but property couldn't be matched. Make sure that you set ToFodyProperty() to a property. It is ineligible for ToFodyProperty weaving.");
+                    WriteError($"Method {method.FullName} calls ToFodyProperty() but does not set the result to a property. It is therefore ineligible for ToFodyProperty weaving.");
                     return;
                 }
 
-                if (!(instructionBlock.Instruction.Operand is MethodDefinition propertyMethod && propertyMethod.IsSetter))
+                var name = propertyMethod.Name.Substring(4);
+
+                if (string.IsNullOrWhiteSpace(name))
                 {
-                    WriteError($"Method {method.FullName} calls ToFodyProperty() but property couldn't be matched. Make sure that you set ToFodyProperty() to a property. It is ineligible for ToFodyProperty weaving.");
+                    WriteError($"Method {method.FullName} calls ToFodyProperty() but could not find property name. It is therefore ineligible for ToFodyProperty weaving.");
                     return;
                 }
-
-                var name = propertyMethod.Name;
 
                 var propertyData = typeNode.PropertyDatas.Find(x => x.PropertyDefinition.Name == name);
 
                 if (propertyData == null)
                 {
-                    WriteError($"Method {method.FullName} calls ToFodyProperty() but property couldn't be matched. Make sure that you set ToFodyProperty() to a property. It is ineligible for ToFodyProperty weaving.");
+                    WriteError($"Method {method.FullName} calls ToFodyProperty() but property with name {name} couldn't be matched. Make sure that you set ToFodyProperty() to a property. It is ineligible for ToFodyProperty weaving.");
                     return;
                 }
 
                 if (propertyData.PropertyDefinition.GetMethod == null)
                 {
-                    WriteError($"Method {method.FullName} calls ToFodyProperty on property {propertyData.PropertyDefinition.FullName} has no getter and therefore is not suitable for ToFodyProperty weaving.");
+                    WriteError($"Method {method.FullName} calls ToFodyProperty on property {name} has no getter and therefore is not suitable for ToFodyProperty weaving.");
                     return;
                 }
 
                 if (propertyData.PropertyDefinition.GetMethod.IsStatic)
                 {
-                    WriteError($"Method {method.FullName} calls ToFodyProperty on property {propertyData.PropertyDefinition.FullName} which getter is static and therefore is not suitable for ToFodyProperty weaving.");
+                    WriteError($"Method {method.FullName} calls ToFodyProperty on property {name} which getter is static and therefore is not suitable for ToFodyProperty weaving.");
                     return;
                 }
 
-                CreateObservable(typeNode.TypeDefinition, method, propertyData, instructionBlock);
+                // Get the instructions for the set property.
+                var instructionBlock = GetDependentInstructions(method, propertySetInstruction);
+
+                if (instructionBlock == null)
+                {
+                    WriteError($"Method {method.FullName} calls ToFodyProperty() on property {name} but could not find correct instructions. It is therefore ineligible for ToFodyProperty weaving.");
+                    return;
+                }
+
+                CreateObservable(typeNode.TypeDefinition, method, propertyData, instructionBlock, constructors);
             }
 
             method.Body.OptimizeMacros();
         }
 
-        private class InstructionBlock
+        private class InstructionBlock : IEnumerable<InstructionBlock>
         {
-            public InstructionBlock(Instruction instruction)
+            public InstructionBlock(Instruction instruction, MethodDefinition parentMethod, int index)
             {
                 Instruction = instruction;
                 NeededInstructions = new List<InstructionBlock>(instruction.GetPopDelta());
+                Index = index;
+                ParentMethod = parentMethod;
             }
 
             public List<InstructionBlock> NeededInstructions { get; }
 
-            public Instruction Instruction { get; set; }
+            public Instruction Instruction { get; }
+
+            public MethodDefinition ParentMethod { get; }
+
+            public int Index { get; }
+
+            public IEnumerator<InstructionBlock> GetEnumerator()
+            {
+                foreach (var neededInstruction in NeededInstructions.OrderBy(x => x.Index))
+                {
+                    foreach (var child in neededInstruction.OrderBy(x => x.Index))
+                    {
+                        yield return child;
+                    }
+                }
+
+                yield return this;
+            }
 
             public override string ToString()
             {
                 return $"{Instruction} - ({string.Join(", ", NeededInstructions.Select(x => x.ToString()))})";
+            }
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
             }
         }
     }
