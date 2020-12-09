@@ -5,10 +5,9 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using PublicApiGenerator;
+
 using ReactiveUI.Fody.Helpers;
-using Shouldly;
+
 using Xunit;
 
 namespace ReactiveUI.Fody.Tests.API
@@ -17,9 +16,6 @@ namespace ReactiveUI.Fody.Tests.API
     public class ApiApprovalTests : ApiApprovalBase
     {
         [Fact]
-        public void ReactiveUIFody()
-        {
-            CheckApproval(typeof(ReactiveAttribute).Assembly);
-        }
+        public void ReactiveUIFody() => CheckApproval(typeof(ReactiveAttribute).Assembly);
     }
 }

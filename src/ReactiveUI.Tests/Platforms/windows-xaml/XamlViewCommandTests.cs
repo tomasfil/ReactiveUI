@@ -8,9 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
-using System.Windows;
-using Splat;
+
 using Xunit;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation.Peers;

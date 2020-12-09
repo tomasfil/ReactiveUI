@@ -250,12 +250,12 @@ namespace ReactiveUI.Fody
         /// <returns>The field bound to the generic type.</returns>
         public static FieldReference BindDefinition(this FieldReference field, TypeReference genericTypeDefinition)
         {
-            if (field == null)
+            if (field is null)
             {
                 throw new ArgumentNullException(nameof(field));
             }
 
-            if (genericTypeDefinition == null)
+            if (genericTypeDefinition is null)
             {
                 throw new ArgumentNullException(nameof(genericTypeDefinition));
             }

@@ -8,7 +8,9 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
-using Shouldly;
+
+using FluentAssertions;
+
 using Xunit;
 
 namespace ReactiveUI.Tests
@@ -21,7 +23,7 @@ namespace ReactiveUI.Tests
             var vm = new InteractionBindViewModel();
             var view = new InteractionBindView { ViewModel = vm };
 
-            var disp = view.BindInteraction(
+            var disposable = view.BindInteraction(
                 vm,
                 vm => vm.Interaction1,
                 input =>
@@ -32,7 +34,7 @@ namespace ReactiveUI.Tests
 
             bool isDeletionConfirmed = await vm.Interaction1.Handle("123");
 
-            isDeletionConfirmed.ShouldBeTrue();
+            isDeletionConfirmed.Should().BeTrue();
         }
 
         [Fact]
@@ -41,7 +43,7 @@ namespace ReactiveUI.Tests
             var vm = new InteractionBindViewModel();
             var view = new InteractionBindView { ViewModel = vm };
 
-            var disp = view.BindInteraction(
+            var disposable = view.BindInteraction(
                 vm,
                 vm => vm.Interaction1,
                 input =>
@@ -52,7 +54,7 @@ namespace ReactiveUI.Tests
 
             bool isDeletionConfirmed = await vm.Interaction1.Handle("123");
 
-            isDeletionConfirmed.ShouldBeTrue();
+            isDeletionConfirmed.Should().BeTrue();
         }
 
         [Fact]
@@ -61,7 +63,7 @@ namespace ReactiveUI.Tests
             InteractionBindViewModel? vm = null;
             var view = new InteractionBindView { ViewModel = vm };
 
-            var disp = view.BindInteraction(
+            var disposable = view.BindInteraction(
                 vm,
                 vm => vm.Interaction1,
                 input =>
@@ -74,7 +76,7 @@ namespace ReactiveUI.Tests
 
             bool isDeletionConfirmed = await view.ViewModel.Interaction1.Handle("123");
 
-            isDeletionConfirmed.ShouldBeTrue();
+            isDeletionConfirmed.Should().BeTrue();
         }
 
         [Fact]
@@ -83,7 +85,7 @@ namespace ReactiveUI.Tests
             InteractionBindViewModel? vm = null;
             var view = new InteractionBindView { ViewModel = vm };
 
-            var disp = view.BindInteraction(
+            var disposable = view.BindInteraction(
                 vm,
                 vm => vm.Interaction1,
                 input =>
@@ -96,7 +98,7 @@ namespace ReactiveUI.Tests
 
             bool isDeletionConfirmed = await view.ViewModel.Interaction1.Handle("123");
 
-            isDeletionConfirmed.ShouldBeTrue();
+            isDeletionConfirmed.Should().BeTrue();
         }
 
         [Fact]
@@ -105,7 +107,7 @@ namespace ReactiveUI.Tests
             var vm = new InteractionBindViewModel();
             var view = new InteractionBindView { ViewModel = vm };
 
-            var disp = view.BindInteraction(
+            var disposable = view.BindInteraction(
                 vm,
                 vm => vm.Interaction1,
                 input =>
@@ -125,7 +127,7 @@ namespace ReactiveUI.Tests
             var vm = new InteractionBindViewModel();
             var view = new InteractionBindView { ViewModel = vm };
 
-            var disp = view.BindInteraction(
+            var disposable = view.BindInteraction(
                 vm,
                 vm => vm.Interaction1,
                 input =>
@@ -145,7 +147,7 @@ namespace ReactiveUI.Tests
             var vm = new InteractionBindViewModel();
             var view = new InteractionBindView { ViewModel = vm };
 
-            var disp = view.BindInteraction(
+            var disposable = view.BindInteraction(
                 vm,
                 vm => vm.Interaction1,
                 input =>
@@ -165,7 +167,7 @@ namespace ReactiveUI.Tests
             var vm = new InteractionBindViewModel();
             var view = new InteractionBindView { ViewModel = vm };
 
-            var disp = view.BindInteraction(
+            var disposable = view.BindInteraction(
                 vm,
                 vm => vm.Interaction1,
                 input =>
@@ -185,7 +187,7 @@ namespace ReactiveUI.Tests
             var vm = new InteractionBindViewModel();
             var view = new InteractionBindView { ViewModel = vm };
 
-            var disp = view.BindInteraction(
+            var disposable = view.BindInteraction(
                 vm,
                 vm => vm.Interaction1,
                 input =>
@@ -198,7 +200,7 @@ namespace ReactiveUI.Tests
 
             bool isDeletionConfirmed = await view.ViewModel.Interaction1.Handle("123");
 
-            isDeletionConfirmed.ShouldBeTrue();
+            isDeletionConfirmed.Should().BeTrue();
         }
 
         [Fact]
@@ -207,7 +209,7 @@ namespace ReactiveUI.Tests
             var vm = new InteractionBindViewModel();
             var view = new InteractionBindView { ViewModel = vm };
 
-            var disp = view.BindInteraction(
+            var disposable = view.BindInteraction(
                 vm,
                 vm => vm.Interaction1,
                 input =>
@@ -220,7 +222,7 @@ namespace ReactiveUI.Tests
 
             bool isDeletionConfirmed = await view.ViewModel.Interaction1.Handle("123");
 
-            isDeletionConfirmed.ShouldBeTrue();
+            isDeletionConfirmed.Should().BeTrue();
         }
 
         [Fact]
@@ -229,7 +231,7 @@ namespace ReactiveUI.Tests
             var vm = new InteractionAncestorViewModel();
             var view = new InteractionAncestorView { ViewModel = vm };
 
-            var disp = view.BindInteraction(
+            var disposable = view.BindInteraction(
                 vm,
                 vm => vm.InteractionViewModel.Interaction1,
                 input =>
@@ -240,7 +242,7 @@ namespace ReactiveUI.Tests
 
             bool isDeletionConfirmed = await vm.InteractionViewModel.Interaction1.Handle("123");
 
-            isDeletionConfirmed.ShouldBeTrue();
+            isDeletionConfirmed.Should().BeTrue();
         }
 
         [Fact]
@@ -249,7 +251,7 @@ namespace ReactiveUI.Tests
             var vm = new InteractionAncestorViewModel();
             var view = new InteractionAncestorView { ViewModel = vm };
 
-            var disp = view.BindInteraction(
+            var disposable = view.BindInteraction(
                 vm,
                 vm => vm.InteractionViewModel.Interaction1,
                 input =>
@@ -260,7 +262,7 @@ namespace ReactiveUI.Tests
 
             bool isDeletionConfirmed = await vm.InteractionViewModel.Interaction1.Handle("123");
 
-            isDeletionConfirmed.ShouldBeTrue();
+            isDeletionConfirmed.Should().BeTrue();
         }
 
         [Fact]
@@ -270,7 +272,7 @@ namespace ReactiveUI.Tests
             var vm = new InteractionAncestorViewModel();
             var view = new InteractionAncestorView { ViewModel = vm };
 
-            var disp = view.BindInteraction(
+            var disposable = view.BindInteraction(
                 vm,
                 vm => vm.InteractionViewModel.Interaction1,
                 input =>
@@ -291,7 +293,7 @@ namespace ReactiveUI.Tests
             var vm = new InteractionAncestorViewModel();
             var view = new InteractionAncestorView { ViewModel = vm };
 
-            var disp = view.BindInteraction(
+            var disposable = view.BindInteraction(
                 vm,
                 vm => vm.InteractionViewModel.Interaction1,
                 input =>
@@ -314,7 +316,7 @@ namespace ReactiveUI.Tests
             };
             var view = new InteractionAncestorView { ViewModel = vm };
 
-            var disp = view.BindInteraction(
+            var disposable = view.BindInteraction(
                 vm,
                 vm => vm.InteractionViewModel.Interaction1,
                 input =>
@@ -327,7 +329,7 @@ namespace ReactiveUI.Tests
 
             bool isDeletionConfirmed = await vm.InteractionViewModel.Interaction1.Handle("123");
 
-            isDeletionConfirmed.ShouldBeTrue();
+            isDeletionConfirmed.Should().BeTrue();
         }
 
         [Fact]
@@ -339,7 +341,7 @@ namespace ReactiveUI.Tests
             };
             var view = new InteractionAncestorView { ViewModel = vm };
 
-            var disp = view.BindInteraction(
+            var disposable = view.BindInteraction(
                 vm,
                 vm => vm.InteractionViewModel.Interaction1,
                 input =>
@@ -352,7 +354,7 @@ namespace ReactiveUI.Tests
 
             bool isDeletionConfirmed = await vm.InteractionViewModel.Interaction1.Handle("123");
 
-            isDeletionConfirmed.ShouldBeTrue();
+            isDeletionConfirmed.Should().BeTrue();
         }
 
         [Fact]
@@ -361,7 +363,7 @@ namespace ReactiveUI.Tests
             var vm = new InteractionBindViewModel();
             var view = new InteractionBindView { ViewModel = vm };
 
-            var disp = view.BindInteraction(
+            var disposable = view.BindInteraction(
                 vm,
                 vm => vm.Interaction1,
                 input =>
@@ -370,7 +372,7 @@ namespace ReactiveUI.Tests
                     return Task.CompletedTask;
                 });
 
-            disp.Dispose();
+            disposable.Dispose();
 
             _ = Assert.ThrowsAsync<UnhandledInteractionException<string, bool>>(() => vm.Interaction1.Handle("123").ToTask());
         }
@@ -381,7 +383,7 @@ namespace ReactiveUI.Tests
             var vm = new InteractionBindViewModel();
             var view = new InteractionBindView { ViewModel = vm };
 
-            var disp = view.BindInteraction(
+            var disposable = view.BindInteraction(
                 vm,
                 vm => vm.Interaction1,
                 input =>
@@ -390,7 +392,7 @@ namespace ReactiveUI.Tests
                     return Observable.Return(Unit.Default);
                 });
 
-            disp.Dispose();
+            disposable.Dispose();
 
             _ = Assert.ThrowsAsync<UnhandledInteractionException<string, bool>>(() => vm.Interaction1.Handle("123").ToTask());
         }
@@ -403,7 +405,7 @@ namespace ReactiveUI.Tests
                 var vm = new InteractionBindViewModel();
                 var view = new InteractionBindView { ViewModel = vm };
                 var weakRef = new WeakReference(vm);
-                var disp = view.BindInteraction(
+                var disposable = view.BindInteraction(
                     vm,
                     vm => vm.Interaction1,
                     input =>
@@ -413,10 +415,10 @@ namespace ReactiveUI.Tests
                         });
                 view.ViewModel = new InteractionBindViewModel();
 
-                return (disp, weakRef);
+                return (disposable, weakRef);
             }
 
-            var (disp, weakRef) = GetWeakReference();
+            var (disposable, weakRef) = GetWeakReference();
 
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -432,7 +434,7 @@ namespace ReactiveUI.Tests
                 var vm = new InteractionAncestorViewModel() { InteractionViewModel = new InteractionBindViewModel() };
                 var view = new InteractionAncestorView { ViewModel = vm };
                 var weakRef = new WeakReference(vm.InteractionViewModel);
-                var disp = view.BindInteraction(
+                var disposable = view.BindInteraction(
                     vm,
                     vm => vm.InteractionViewModel.Interaction1,
                     input =>
@@ -442,10 +444,10 @@ namespace ReactiveUI.Tests
                     });
                 vm.InteractionViewModel = new InteractionBindViewModel();
 
-                return (disp, weakRef);
+                return (disposable, weakRef);
             }
 
-            var (disp, weakRef) = GetWeakReference();
+            var (disposable, weakRef) = GetWeakReference();
 
             GC.Collect();
             GC.WaitForPendingFinalizers();

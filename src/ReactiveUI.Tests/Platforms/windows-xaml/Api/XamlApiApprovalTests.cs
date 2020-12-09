@@ -4,13 +4,8 @@
 // See the LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PublicApiGenerator;
-using Shouldly;
+
 using Xunit;
 
 namespace ReactiveUI.Tests.Xaml
@@ -19,9 +14,6 @@ namespace ReactiveUI.Tests.Xaml
     public class XamlApiApprovalTests : ApiApprovalBase
     {
         [Fact]
-        public void Blend()
-        {
-            CheckApproval(typeof(Blend.FollowObservableStateBehavior).Assembly);
-        }
+        public void Blend() => CheckApproval(typeof(Blend.FollowObservableStateBehavior).Assembly);
     }
 }

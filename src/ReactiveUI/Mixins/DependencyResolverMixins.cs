@@ -4,9 +4,8 @@
 // See the LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -23,20 +22,33 @@ namespace ReactiveUI
         /// This method allows you to initialize resolvers with the default
         /// ReactiveUI types. All resolvers used as the default
         /// Locator.Current.
+        /// If no namespaces are passed in, all registrations will be checked.
         /// </summary>
         /// <param name="resolver">The resolver to initialize.</param>
+        /// <param name="registrationNamespaces">Which platforms to use.</param>
         [SuppressMessage("Globalization", "CA1307: operator could change based on locale settings", Justification = "Replace() does not have third parameter on all platforms")]
-        public static void InitializeReactiveUI(this IMutableDependencyResolver resolver)
+        public static void InitializeReactiveUI(this IMutableDependencyResolver resolver, params RegistrationNamespace[] registrationNamespaces)
         {
-            var extraNs = new[]
+            var possibleNamespaces = new Dictionary<RegistrationNamespace, string>
             {
-                "ReactiveUI.XamForms",
-                "ReactiveUI.Winforms",
-                "ReactiveUI.Wpf",
-                "ReactiveUI.Uno",
-                "ReactiveUI.Blazor",
-                "ReactiveUI.Drawing"
+                { RegistrationNamespace.XamForms, "ReactiveUI.XamForms" },
+                { RegistrationNamespace.Winforms, "ReactiveUI.Winforms" },
+                { RegistrationNamespace.Wpf, "ReactiveUI.Wpf" },
+                { RegistrationNamespace.Uno, "ReactiveUI.Uno" },
+                { RegistrationNamespace.Blazor, "ReactiveUI.Blazor" },
+                { RegistrationNamespace.Drawing, "ReactiveUI.Drawing" }
             };
+
+            if (registrationNamespaces.Length == 0)
+            {
+                registrationNamespaces = PlatformRegistrationManager.DefaultRegistrationNamespaces;
+            }
+
+            var extraNs =
+                possibleNamespaces
+                    .Where(kvp => registrationNamespaces.Contains(kvp.Key))
+                    .Select(kvp => kvp.Value)
+                    .ToArray();
 
             // Set up the built-in registration
             new Registrations().Register((f, t) => resolver.RegisterConstant(f(), t));
@@ -44,7 +56,7 @@ namespace ReactiveUI
 
             var fdr = typeof(DependencyResolverMixins);
 
-            var assemblyName = new AssemblyName(fdr?.AssemblyQualifiedName?.Replace(fdr?.FullName + ", ", string.Empty)!);
+            var assemblyName = new AssemblyName(fdr.AssemblyQualifiedName?.Replace(fdr?.FullName + ", ", string.Empty)!);
 
             foreach (var ns in extraNs)
             {
@@ -61,12 +73,12 @@ namespace ReactiveUI
         /// <param name="assembly">The assembly to search using reflection for IViewFor classes.</param>
         public static void RegisterViewsForViewModels(this IMutableDependencyResolver resolver, Assembly assembly)
         {
-            if (resolver == null)
+            if (resolver is null)
             {
                 throw new ArgumentNullException(nameof(resolver));
             }
 
-            if (assembly == null)
+            if (assembly is null)
             {
                 throw new ArgumentNullException(nameof(assembly));
             }
@@ -79,11 +91,11 @@ namespace ReactiveUI
                 var ivf = ti.ImplementedInterfaces.FirstOrDefault(t => t.GetTypeInfo().ImplementedInterfaces.Contains(typeof(IViewFor)));
 
                 // need to check for null because some classes may implement IViewFor but not IViewFor<T> - we don't care about those
-                if (ivf != null)
+                if (ivf is not null)
                 {
                     // my kingdom for c# 6!
                     var contractSource = ti.GetCustomAttribute<ViewContractAttribute>();
-                    var contract = contractSource != null ? contractSource.Contract : string.Empty;
+                    var contract = contractSource is not null ? contractSource.Contract : string.Empty;
 
                     RegisterType(resolver, ti, ivf, contract);
                 }
@@ -93,7 +105,7 @@ namespace ReactiveUI
         private static void RegisterType(IMutableDependencyResolver resolver, TypeInfo ti, Type serviceType, string contract)
         {
             var factory = TypeFactory(ti);
-            if (ti.GetCustomAttribute<SingleInstanceViewAttribute>() != null)
+            if (ti.GetCustomAttribute<SingleInstanceViewAttribute>() is not null)
             {
                 resolver.RegisterLazySingleton(factory, serviceType, contract);
             }
@@ -107,7 +119,7 @@ namespace ReactiveUI
         private static Func<object> TypeFactory(TypeInfo typeInfo)
         {
             var parameterlessConstructor = typeInfo.DeclaredConstructors.FirstOrDefault(ci => ci.IsPublic && !ci.GetParameters().Any());
-            if (parameterlessConstructor == null)
+            if (parameterlessConstructor is null)
             {
                 throw new Exception($"Failed to register type {typeInfo.FullName} because it's missing a parameterless constructor.");
             }
@@ -119,12 +131,12 @@ namespace ReactiveUI
         private static void ProcessRegistrationForNamespace(string namespaceName, AssemblyName assemblyName, IMutableDependencyResolver resolver)
         {
             var targetType = namespaceName + ".Registrations";
-            if (assemblyName.Name != null)
+            if (assemblyName.Name is not null)
             {
                 var fullName = targetType + ", " + assemblyName.FullName.Replace(assemblyName.Name, namespaceName);
 
                 var registerTypeClass = Reflection.ReallyFindType(fullName, false);
-                if (registerTypeClass != null)
+                if (registerTypeClass is not null)
                 {
                     var registerer = (IWantsToRegisterStuff)Activator.CreateInstance(registerTypeClass)!;
                     registerer?.Register((f, t) => resolver.RegisterConstant(f(), t));

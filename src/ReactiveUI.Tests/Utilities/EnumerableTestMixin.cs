@@ -36,12 +36,17 @@ namespace ReactiveUI.Tests
             }
         }
 
-        public static IEnumerable<T> DistinctUntilChanged<T>(this IEnumerable<T> @this)
+        public static IEnumerable<T> DistinctUntilChanged<T>(this IEnumerable<T> enumerable)
         {
+            if (enumerable is null)
+            {
+                throw new ArgumentNullException(nameof(enumerable));
+            }
+
             var isFirst = true;
             var lastValue = default(T);
 
-            foreach (var v in @this)
+            foreach (var v in enumerable)
             {
                 if (isFirst)
                 {
@@ -51,7 +56,7 @@ namespace ReactiveUI.Tests
                     continue;
                 }
 
-                if (lastValue == null)
+                if (lastValue is null)
                 {
                     continue;
                 }

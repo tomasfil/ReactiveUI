@@ -26,14 +26,14 @@ namespace ReactiveUI.Tests
             var input = new[] { 1, 2, 3, 3, 4 }.ToObservable();
             var output = new List<int>();
 
-            new TestScheduler().With(sched =>
+            new TestScheduler().With(scheduler =>
             {
                 var fixture = new ObservableAsPropertyHelper<int>(
                     input,
                     x => output.Add(x),
                     -5);
 
-                sched.Start();
+                scheduler.Start();
 
                 Assert.Equal(input.LastAsync().Wait(), fixture.Value);
 
@@ -49,14 +49,14 @@ namespace ReactiveUI.Tests
             var input = new[] { 1, 2, 3 }.ToObservable();
             var output = new List<int>();
 
-            new TestScheduler().With(sched =>
+            new TestScheduler().With(scheduler =>
             {
                 var fixture = new ObservableAsPropertyHelper<int>(
                     input,
                     x => output.Add(x),
                     1);
 
-                sched.Start();
+                scheduler.Start();
 
                 Assert.Equal(input.LastAsync().Wait(), fixture.Value);
 
@@ -69,7 +69,7 @@ namespace ReactiveUI.Tests
         {
             var output = new List<int>();
 
-            new TestScheduler().With(sched =>
+            new TestScheduler().With(scheduler =>
             {
                 var fixture = new ObservableAsPropertyHelper<int>(
                     Observable<int>.Never,
@@ -83,23 +83,23 @@ namespace ReactiveUI.Tests
         [Fact]
         public void OAPHShouldProvideLatestValue()
         {
-            var sched = new TestScheduler();
+            var scheduler = new TestScheduler();
             var input = new Subject<int>();
 
             var fixture = new ObservableAsPropertyHelper<int>(
                 input,
                 _ => { },
                 -5,
-                scheduler: sched);
+                scheduler: scheduler);
 
             Assert.Equal(-5, fixture.Value);
             new[] { 1, 2, 3, 4 }.Run(x => input.OnNext(x));
 
-            sched.Start();
+            scheduler.Start();
             Assert.Equal(4, fixture.Value);
 
             input.OnCompleted();
-            sched.Start();
+            scheduler.Start();
             Assert.Equal(4, fixture.Value);
         }
 
@@ -181,13 +181,100 @@ namespace ReactiveUI.Tests
             Assert.Null(ex);
         }
 
+        [Theory]
+        [InlineData(default(int))]
+        [InlineData(42)]
+        public void OAPHDeferSubscriptionWithInitialValueShouldNotEmitInitialValue(int initialValue)
+        {
+            var observable = Observable.Empty<int>();
+
+            var fixture = new ObservableAsPropertyHelper<int>(observable, _ => { }, initialValue, deferSubscription: true);
+
+            Assert.False(fixture.IsSubscribed);
+
+            int? emittedValue = null;
+            fixture.Source.Subscribe(val => emittedValue = val);
+            Assert.Null(emittedValue);
+            Assert.False(fixture.IsSubscribed);
+        }
+
+        [Fact]
+        public void OAPHDeferSubscriptionWithInitialFuncValueShouldNotEmitInitialValueNorAccessFunc()
+        {
+            var observable = Observable.Empty<int>();
+            Func<int> throwIfAccessed = () => throw new Exception();
+
+            var fixture = new ObservableAsPropertyHelper<int>(observable, _ => { }, getInitialValue: throwIfAccessed, deferSubscription: true);
+
+            Assert.False(fixture.IsSubscribed);
+
+            int? emittedValue = null;
+            fixture.Source.Subscribe(val => emittedValue = val);
+            Assert.Null(emittedValue);
+            Assert.False(fixture.IsSubscribed);
+        }
+
+        [Theory]
+        [InlineData(default(int))]
+        [InlineData(42)]
+        public void OAPHDeferSubscriptionWithInitialValueEmitInitialValueWhenSubscribed(int initialValue)
+        {
+            var observable = Observable.Empty<int>();
+
+            var fixture = new ObservableAsPropertyHelper<int>(observable, _ => { }, initialValue, deferSubscription: true);
+
+            Assert.False(fixture.IsSubscribed);
+
+            var result = fixture.Value;
+            Assert.True(fixture.IsSubscribed);
+            Assert.Equal(initialValue, result);
+        }
+
+        [Fact]
+        public void OAPHDeferSubscriptionWithInitialFuncValueEmitInitialValueWhenSubscribed()
+        {
+            var observable = Observable.Empty<int>();
+            bool wasAccessed = false;
+            Func<int> getInitialValue = () =>
+            {
+                wasAccessed = true;
+                return 42;
+            };
+
+            var fixture = new ObservableAsPropertyHelper<int>(observable, _ => { }, getInitialValue: getInitialValue, deferSubscription: true);
+
+            Assert.False(fixture.IsSubscribed);
+            Assert.False(wasAccessed);
+
+            var result = fixture.Value;
+            Assert.True(fixture.IsSubscribed);
+            Assert.True(wasAccessed);
+            Assert.Equal(42, result);
+        }
+
+        [Theory]
+        [InlineData(default(int))]
+        [InlineData(42)]
+        public void OAPHInitialValueShouldEmitInitialValue(int initialValue)
+        {
+            var observable = Observable.Empty<int>();
+
+            var fixture = new ObservableAsPropertyHelper<int>(observable, _ => { }, initialValue, deferSubscription: false);
+
+            Assert.True(fixture.IsSubscribed);
+
+            int? emittedValue = null;
+            fixture.Source.Subscribe(val => emittedValue = val);
+            Assert.Equal(initialValue, emittedValue);
+        }
+
         [Fact]
         public void OAPHShouldRethrowErrors()
         {
             var input = new Subject<int>();
-            var sched = new TestScheduler();
+            var scheduler = new TestScheduler();
 
-            var fixture = new ObservableAsPropertyHelper<int>(input, _ => { }, -5, scheduler: sched);
+            var fixture = new ObservableAsPropertyHelper<int>(input, _ => { }, -5, scheduler: scheduler);
             var errors = new List<Exception>();
 
             Assert.Equal(-5, fixture.Value);
@@ -195,22 +282,21 @@ namespace ReactiveUI.Tests
 
             fixture.ThrownExceptions.Subscribe(errors.Add);
 
-            sched.Start();
+            scheduler.Start();
 
             Assert.Equal(4, fixture.Value);
 
             input.OnError(new Exception("Die!"));
 
-            sched.Start();
+            scheduler.Start();
 
             Assert.Equal(4, fixture.Value);
             Assert.Equal(1, errors.Count);
         }
 
         [Fact]
-        public void NoThrownExceptionsSubscriberEqualsOAPHDeath()
-        {
-            new TestScheduler().With(sched =>
+        public void NoThrownExceptionsSubscriberEqualsOAPHDeath() =>
+            new TestScheduler().With(scheduler =>
             {
                 var input = new Subject<int>();
                 var fixture = new ObservableAsPropertyHelper<int>(input, _ => { }, -5, scheduler: ImmediateScheduler.Instance);
@@ -223,7 +309,7 @@ namespace ReactiveUI.Tests
                 var failed = true;
                 try
                 {
-                    sched.Start();
+                    scheduler.Start();
                 }
                 catch (Exception ex)
                 {
@@ -233,7 +319,6 @@ namespace ReactiveUI.Tests
                 Assert.False(failed);
                 Assert.Equal(4, fixture.Value);
             });
-        }
 
         [Fact]
         public void ToPropertyShouldFireBothChangingAndChanged()
@@ -288,6 +373,21 @@ namespace ReactiveUI.Tests
         [InlineData(new string[] { "FooBar", "Bazz" }, new string[] { "Foo", "Baz" }, new string[] { "Bar", "azz" })]
         public void ToProperty_NameOf_ValidValuesProduced(string[] testWords, string[] first3Letters, string[] last3Letters)
         {
+            if (testWords is null)
+            {
+                throw new ArgumentNullException(nameof(testWords));
+            }
+
+            if (first3Letters is null)
+            {
+                throw new ArgumentNullException(nameof(first3Letters));
+            }
+
+            if (last3Letters is null)
+            {
+                throw new ArgumentNullException(nameof(last3Letters));
+            }
+
             var fixture = new OaphNameOfTestFixture();
 
             fixture.ObservableForProperty(x => x.FirstThreeLettersOfOneWord, beforeChange: true).ToObservableChangeSet(ImmediateScheduler.Instance).Bind(out var firstThreeChanging).Subscribe();
@@ -320,22 +420,23 @@ namespace ReactiveUI.Tests
         }
 
         [Fact]
-        public void ToProperty_GivenIndexer_NotifiesOnExpectedPropertyName()
-        {
-            new TestScheduler().With(sched =>
+        public void ToProperty_GivenIndexer_NotifiesOnExpectedPropertyName() =>
+            new TestScheduler().With(scheduler =>
             {
                 var fixture = new OAPHIndexerTestFixture();
                 var propertiesChanged = new List<string>();
 
-                fixture.PropertyChanged += (sender, args) =>
+                fixture.PropertyChanged += (_, args) =>
                 {
-                    propertiesChanged.Add(args.PropertyName);
+                    if (args.PropertyName != null)
+                    {
+                        propertiesChanged.Add(args.PropertyName);
+                    }
                 };
 
                 fixture.Text = "awesome";
 
                 Assert.Equal(new[] { "Text", "Item[]" }, propertiesChanged);
             });
-        }
     }
 }
