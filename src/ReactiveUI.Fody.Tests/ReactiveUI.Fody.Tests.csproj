@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>    
     <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
-    <FodyTargetFrameworks>netstandard2.0;net5.0</FodyTargetFrameworks>
+    <FodyTargetFramework>netstandard2.0</FodyTargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <DisableFody>true</DisableFody>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ReactiveUI.Fody.TestAssemblies\ReactiveUI.Fody.Tests.OAPHAssembly\ReactiveUI.Fody.Tests.OAPHAssembly.csproj" />
-    <ProjectReference Include="..\ReactiveUI.Fody\ReactiveUI.Fody.csproj" />
     <ProjectReference Include="..\ReactiveUI.Fody.Helpers\ReactiveUI.Fody.Helpers.csproj" />
+    <ProjectReference Include="..\ReactiveUI.Fody.TestAssemblies\ReactiveUI.Fody.Tests.OAPHAssembly\ReactiveUI.Fody.TestArtifact.OAPHAssembly.csproj" />
+    <ProjectReference Include="..\ReactiveUI.Fody\ReactiveUI.Fody.csproj" />
     <ProjectReference Include="..\ReactiveUI\ReactiveUI.csproj" />
   </ItemGroup>
 
@@ -19,6 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fody" Version="6.3.0" PrivateAssets="None" />
+    <PackageReference Include="Fody" Version="6.3.0" />
+    <PackageReference Include="FodyHelpers" Version="6.3.0" />
+
   </ItemGroup>
 </Project>
