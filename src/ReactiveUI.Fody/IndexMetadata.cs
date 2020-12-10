@@ -18,10 +18,7 @@ namespace ReactiveUI.Fody
             Count = count;
         }
 
-        public override bool Equals(object? obj)
-        {
-            return obj is IndexMetadata other && Equals(other);
-        }
+        public override bool Equals(object? obj) => obj is IndexMetadata other && Equals(other);
 
         public override int GetHashCode()
         {
@@ -31,15 +28,10 @@ namespace ReactiveUI.Fody
             return hashCode;
         }
 
-        public bool Equals(IndexMetadata other)
-        {
-            return Index == other.Index &&
-                Count == other.Count;
-        }
+        public bool Equals(IndexMetadata other) =>
+            Index == other.Index &&
+            Count == other.Count;
 
-        public override string ToString()
-        {
-            return $"({Index}, {Count})";
-        }
+        public override string ToString() => $"({Index}, {Count})";
     }
 }

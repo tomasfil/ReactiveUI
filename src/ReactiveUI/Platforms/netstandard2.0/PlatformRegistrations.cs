@@ -23,11 +23,13 @@ namespace ReactiveUI
                 throw new ArgumentNullException(nameof(registerFunction));
             }
 
-            if (!ModeDetector.InUnitTestRunner())
+            if (ModeDetector.InUnitTestRunner())
             {
-                RxApp.TaskpoolScheduler = TaskPoolScheduler.Default;
-                RxApp.MainThreadScheduler = DefaultScheduler.Instance;
+                return;
             }
+
+            RxApp.TaskpoolScheduler = TaskPoolScheduler.Default;
+            RxApp.MainThreadScheduler = DefaultScheduler.Instance;
         }
     }
 }

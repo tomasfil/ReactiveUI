@@ -15,15 +15,9 @@ namespace ReactiveUI.Fody
 {
     internal static class CecilExtensions
     {
-        public static string GetName(this PropertyDefinition propertyDefinition)
-        {
-            return $"{propertyDefinition.DeclaringType.FullName}.{propertyDefinition.Name}";
-        }
+        public static string GetName(this PropertyDefinition propertyDefinition) => $"{propertyDefinition.DeclaringType.FullName}.{propertyDefinition.Name}";
 
-        public static Instruction GetCall(this MethodDefinition method)
-        {
-            return Instruction.Create(method.IsVirtual ? OpCodes.Callvirt : OpCodes.Call, method);
-        }
+        public static Instruction GetCall(this MethodDefinition method) => Instruction.Create(method.IsVirtual ? OpCodes.Callvirt : OpCodes.Call, method);
 
         public static MethodReference MakeGeneric(this MethodReference self, params TypeReference[] arguments)
         {
@@ -275,10 +269,7 @@ namespace ReactiveUI.Fody
             return reference;
         }
 
-        public static bool ContainsAttribute(this IEnumerable<CustomAttribute> attributes, string attributeName)
-        {
-            return attributes.Any(attribute => attribute.Constructor.DeclaringType.FullName == attributeName);
-        }
+        public static bool ContainsAttribute(this IEnumerable<CustomAttribute> attributes, string attributeName) => attributes.Any(attribute => attribute.Constructor.DeclaringType.FullName == attributeName);
 
         public static IEnumerable<TypeReference> GetAllInterfaces(this TypeDefinition type)
         {

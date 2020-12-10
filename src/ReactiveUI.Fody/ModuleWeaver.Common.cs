@@ -111,10 +111,7 @@ namespace ReactiveUI.Fody
             OAPHCreationHelperMixinToPropertyMethod = ModuleDefinition.ImportReference(toProperty);
         }
 
-        private static bool IsIReactiveObject(TypeDefinition typeDefinition)
-        {
-            return typeDefinition.GetAllInterfaces().Any(x => x.FullName.Equals("ReactiveUI.IReactiveObject", StringComparison.InvariantCulture));
-        }
+        private static bool IsIReactiveObject(TypeDefinition typeDefinition) => typeDefinition.GetAllInterfaces().Any(x => x.FullName.Equals("ReactiveUI.IReactiveObject", StringComparison.InvariantCulture));
 
         private static List<PropertyData> GetPropertyData(TypeDefinition typeDefinition)
         {

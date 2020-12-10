@@ -10,10 +10,7 @@ namespace ReactiveUI.Fody.Tests
 {
     public class Issue11TestModel : ReactiveObject
     {
-        public Issue11TestModel(string myProperty)
-        {
-            MyProperty = Observable.Return(myProperty).ToFodyProperty();
-        }
+        public Issue11TestModel(string myProperty) => MyProperty = Observable.Return(myProperty).ToFodyProperty();
 
         public extern string MyProperty
         {

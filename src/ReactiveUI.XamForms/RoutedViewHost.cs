@@ -57,8 +57,8 @@ namespace ReactiveUI.XamForms
                     .Subscribe()
                     .DisposeWith(disposable);
 
-                Router?
-                    .NavigationChanged?
+                Router
+                    .NavigationChanged
                     .CountChanged()
                     .Select(_ => Router.NavigationStack.Count)
                     .StartWith(Router.NavigationStack.Count)

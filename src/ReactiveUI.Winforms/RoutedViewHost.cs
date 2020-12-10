@@ -54,10 +54,7 @@ namespace ReactiveUI.Winforms
                     SuspendLayout();
                     Controls.Clear();
 
-                    if (viewLastAdded is not null)
-                    {
-                        viewLastAdded.Dispose();
-                    }
+                    viewLastAdded?.Dispose();
 
                     if (x.ViewModel is null)
                     {

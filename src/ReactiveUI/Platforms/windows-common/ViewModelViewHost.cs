@@ -182,15 +182,9 @@ namespace ReactiveUI
             _isDisposed = true;
         }
 
-        private static void ViewModelChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
-        {
-            ((ViewModelViewHost)dependencyObject)._updateViewModel.OnNext(Unit.Default);
-        }
+        private static void ViewModelChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs) => ((ViewModelViewHost)dependencyObject)._updateViewModel.OnNext(Unit.Default);
 
-        private static void ViewContractChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
-        {
-            ((ViewModelViewHost)dependencyObject)._updateViewContract.OnNext(Unit.Default);
-        }
+        private static void ViewContractChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs) => ((ViewModelViewHost)dependencyObject)._updateViewContract.OnNext(Unit.Default);
 
         private void ResolveViewForViewModel(object? viewModel, string? contract)
         {

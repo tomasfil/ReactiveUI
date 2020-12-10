@@ -41,10 +41,8 @@ namespace ReactiveUI.Fody
         }
 
         public PatternInstruction(OpCode opCode, Action<Instruction> action)
-            : this(opCode, null, false)
-        {
+            : this(opCode, null, false) =>
             Action = action;
-        }
 
         public IReadOnlyList<OpCode> EligibleOpCodes { get; }
 
@@ -54,10 +52,7 @@ namespace ReactiveUI.Fody
 
         public bool HasNameFunc => _getName != null;
 
-        public string? GetName(Instruction instruction, ILProcessor processor)
-        {
-            return _getName?.Invoke(instruction, processor);
-        }
+        public string? GetName(Instruction instruction, ILProcessor processor) => _getName?.Invoke(instruction, processor);
 
         public bool IsValid(Instruction instruction, ILProcessor ilProcessor)
         {
@@ -76,10 +71,7 @@ namespace ReactiveUI.Fody
             }
         }
 
-        public override string ToString()
-        {
-            return string.Join(", ", EligibleOpCodes.Select(x => x.ToString()));
-        }
+        public override string ToString() => string.Join(", ", EligibleOpCodes.Select(x => x.ToString()));
 
         private bool PredicateDummy(Instruction instruction, ILProcessor ilProcessor) => true;
     }

@@ -170,18 +170,12 @@ namespace System.Reactive.Linq
             return ObserveOn_(source, DispatcherScheduler.Current.Dispatcher, priority);
         }
 
-        private static IObservable<TSource> ObserveOn_<TSource>(IObservable<TSource> source, Dispatcher dispatcher, DispatcherPriority priority)
-        {
-            return Synchronization.ObserveOn(source, new DispatcherSynchronizationContext(dispatcher, priority));
-        }
+        private static IObservable<TSource> ObserveOn_<TSource>(IObservable<TSource> source, Dispatcher dispatcher, DispatcherPriority priority) => Synchronization.ObserveOn(source, new DispatcherSynchronizationContext(dispatcher, priority));
 
 
-        private static IObservable<TSource> ObserveOn_<TSource>(IObservable<TSource> source, Dispatcher dispatcher)
-        {
-            return Synchronization.ObserveOn(source, new DispatcherSynchronizationContext(dispatcher));
-        }
+        private static IObservable<TSource> ObserveOn_<TSource>(IObservable<TSource> source, Dispatcher dispatcher) => Synchronization.ObserveOn(source, new DispatcherSynchronizationContext(dispatcher));
 
-#endregion
+        #endregion
 
 #region SubscribeOn[Dispatcher]
 
@@ -366,18 +360,12 @@ namespace System.Reactive.Linq
             return SubscribeOn_(source, DispatcherScheduler.Current.Dispatcher, priority);
         }
 
-        private static IObservable<TSource> SubscribeOn_<TSource>(IObservable<TSource> source, Dispatcher dispatcher, DispatcherPriority priority)
-        {
-            return Synchronization.SubscribeOn(source, new DispatcherSynchronizationContext(dispatcher, priority));
-        }
+        private static IObservable<TSource> SubscribeOn_<TSource>(IObservable<TSource> source, Dispatcher dispatcher, DispatcherPriority priority) => Synchronization.SubscribeOn(source, new DispatcherSynchronizationContext(dispatcher, priority));
 
 
-        private static IObservable<TSource> SubscribeOn_<TSource>(IObservable<TSource> source, Dispatcher dispatcher)
-        {
-            return Synchronization.SubscribeOn(source, new DispatcherSynchronizationContext(dispatcher));
-        }
+        private static IObservable<TSource> SubscribeOn_<TSource>(IObservable<TSource> source, Dispatcher dispatcher) => Synchronization.SubscribeOn(source, new DispatcherSynchronizationContext(dispatcher));
 
-#endregion
+        #endregion
     }
 }
 #endif

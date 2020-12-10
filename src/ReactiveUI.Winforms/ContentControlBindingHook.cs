@@ -32,12 +32,7 @@ namespace ReactiveUI.Winforms
                 return true;
             }
 
-            if (viewProperties.Last().GetPropertyName() != "Controls")
-            {
-                return true;
-            }
-
-            return true;
+            return viewProperties.Last().GetPropertyName() != "Controls" || true;
         }
     }
 }

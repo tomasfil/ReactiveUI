@@ -24,10 +24,7 @@ namespace System.Reactive.Concurrency
         /// <remarks>
         /// This scheduler type is typically used indirectly through the <see cref="Linq.ControlObservable.ObserveOn{TSource}"/> and <see cref="Linq.ControlObservable.SubscribeOn{TSource}"/> method overloads that take a Windows Forms control.
         /// </remarks>
-        public ControlScheduler(Control control)
-        {
-            _control = control ?? throw new ArgumentNullException(nameof(control));
-        }
+        public ControlScheduler(Control control) => _control = control ?? throw new ArgumentNullException(nameof(control));
 
         /// <summary>
         /// Gets the control associated with the ControlScheduler.

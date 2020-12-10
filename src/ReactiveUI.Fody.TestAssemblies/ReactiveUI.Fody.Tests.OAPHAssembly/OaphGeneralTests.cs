@@ -65,77 +65,35 @@ namespace ReactiveUI.Fody.OAPHAssembly
 
         public string StringTest2 { get; set; } = "test";
 
-        private void GenerateStringTest()
-        {
-            StringTest = Observable.Return("hello").ToFodyProperty();
-        }
+        private void GenerateStringTest() => StringTest = Observable.Return("hello").ToFodyProperty();
 
-        private void GenerateStringDefaultValue()
-        {
-            StringTest2 = Observable.Return("hello2").ToFodyProperty();
-        }
+        private void GenerateStringDefaultValue() => StringTest2 = Observable.Return("hello2").ToFodyProperty();
 
-        private void GeneratePlainOne()
-        {
-            IntTest = Observable.Return(0).ToFodyProperty();
-        }
+        private void GeneratePlainOne() => IntTest = Observable.Return(0).ToFodyProperty();
 
-        private void GenerateNonFodyPlainOne()
-        {
-            _nonFodyIntTest = Observable.Return(0).ToProperty(this, nameof(NonFodyIntTest), initialValue: Test);
-        }
+        private void GenerateNonFodyPlainOne() => _nonFodyIntTest = Observable.Return(0).ToProperty(this, nameof(NonFodyIntTest), initialValue: Test);
 
-        private void GenerateWithParamsFilled()
-        {
-            IntTest2 = Observable.Return(0).ToFodyProperty(deferSubscription: true, scheduler: ImmediateScheduler.Instance);
-        }
+        private void GenerateWithParamsFilled() => IntTest2 = Observable.Return(0).ToFodyProperty(deferSubscription: true, scheduler: ImmediateScheduler.Instance);
 
-        private void GenerateRandomInt()
-        {
-            IntTest3 = Observable.Return(0).ToFodyProperty(deferSubscription: true, scheduler: new NewThreadScheduler());
-        }
+        private void GenerateRandomInt() => IntTest3 = Observable.Return(0).ToFodyProperty(deferSubscription: true, scheduler: new NewThreadScheduler());
 
-        private void GenerateRandomBool()
-        {
-            IntTest4 = Observable.Return(0).ToFodyProperty(GetRandomBool(), new NewThreadScheduler());
-        }
+        private void GenerateRandomBool() => IntTest4 = Observable.Return(0).ToFodyProperty(GetRandomBool(), new NewThreadScheduler());
 
-        private void GenerateValueFromDelegate()
-        {
-            IntTest5 = Observable.Return(0).ToFodyProperty(GetRandomBool(), scheduler: new NewThreadScheduler());
-        }
+        private void GenerateValueFromDelegate() => IntTest5 = Observable.Return(0).ToFodyProperty(GetRandomBool(), scheduler: new NewThreadScheduler());
 
-        private void GenerateValueTestModel()
-        {
-            ModelTest = Observable.Return<TestModel>(new TestModel(1111)).ToFodyProperty(deferSubscription: true, scheduler: ImmediateScheduler.Instance);
-        }
+        private void GenerateValueTestModel() => ModelTest = Observable.Return<TestModel>(new TestModel(1111)).ToFodyProperty(deferSubscription: true, scheduler: ImmediateScheduler.Instance);
 
-        private void GenerateValueBoxing()
-        {
-            TestBox = Observable.Return((object)0).ToFodyProperty(GetRandomBool(), scheduler: new NewThreadScheduler());
-        }
+        private void GenerateValueBoxing() => TestBox = Observable.Return((object)0).ToFodyProperty(GetRandomBool(), scheduler: new NewThreadScheduler());
 
-        private void GenerateUseBoolProperty()
-        {
-            IntTest6 = Observable.Return(0).ToFodyProperty(deferSubscription: TestBoolPass, scheduler: new NewThreadScheduler());
-        }
+        private void GenerateUseBoolProperty() => IntTest6 = Observable.Return(0).ToFodyProperty(deferSubscription: TestBoolPass, scheduler: new NewThreadScheduler());
 
-        private void GenerateUseBoolField()
-        {
-            IntTest7 = Observable.Return(0).ToFodyProperty(deferSubscription: TestBoolField, scheduler: new NewThreadScheduler());
-        }
+        private void GenerateUseBoolField() => IntTest7 = Observable.Return(0).ToFodyProperty(deferSubscription: TestBoolField, scheduler: new NewThreadScheduler());
 
-        private bool GetRandomBool()
-        {
-            return _random.Next(0, 2) == 1;
-        }
+        private bool GetRandomBool() => _random.Next(0, 2) == 1;
 
         public class TestModel
         {
-            public TestModel(int value)
-            {
-                Value = value;
-            }
+            public TestModel(int value) => Value = value;
 
             public int Value { get; set; }
         }

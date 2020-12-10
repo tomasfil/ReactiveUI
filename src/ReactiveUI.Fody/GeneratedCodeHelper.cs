@@ -3,6 +3,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
+using System;
 using Mono.Cecil;
 using Mono.Collections.Generic;
 
@@ -10,7 +11,7 @@ namespace ReactiveUI.Fody
 {
     internal static class GeneratedCodeHelper
     {
-        private static readonly string AssemblyVersion = typeof(ModuleWeaver).Assembly.GetName().Version.ToString();
+        private static readonly string AssemblyVersion = typeof(ModuleWeaver).Assembly.GetName().Version?.ToString() ?? throw new InvalidOperationException("Could not get a valid version from the Module Weaver assembly.");
         private static readonly string AssemblyName = typeof(ModuleWeaver).Assembly.GetName().Name;
 
         public static void MarkAsGeneratedCode(ModuleWeaver moduleWeaver, Collection<CustomAttribute> customAttributes)

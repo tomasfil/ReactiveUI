@@ -142,8 +142,8 @@ namespace ReactiveUI.Tests
             });
 
         [Fact]
-        public void BindToStackOverFlowTest()
-        {
+        public void BindToStackOverFlowTest() =>
+
             // Before the code changes packed in the same commit
             // as this test the test would go into an infinite
             // event storm. The critical issue is that the
@@ -161,6 +161,5 @@ namespace ReactiveUI.Tests
 
                 source.BindTo(fixtureA, x => x.StackOverflowTrigger);
             });
-        }
     }
 }

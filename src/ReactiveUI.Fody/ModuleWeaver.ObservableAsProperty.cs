@@ -48,13 +48,11 @@ namespace ReactiveUI.Fody
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsToFodyPropertyInstruction(Instruction instruction)
-        {
-            return instruction.OpCode == OpCodes.Call &&
-                instruction.Operand is MethodReference methodReference &&
-                methodReference.DeclaringType.FullName == "ReactiveUI.Fody.Helpers.ObservableAsPropertyExtensions" &&
-                methodReference.Name == "ToFodyProperty";
-        }
+        private static bool IsToFodyPropertyInstruction(Instruction instruction) =>
+            instruction.OpCode == OpCodes.Call &&
+            instruction.Operand is MethodReference methodReference &&
+            methodReference.DeclaringType.FullName == "ReactiveUI.Fody.Helpers.ObservableAsPropertyExtensions" &&
+            methodReference.Name == "ToFodyProperty";
 
         private static IEnumerable<InstructionBlock> FindInitializer(FieldDefinition oldFieldDefinition, List<MethodDefinition> constructors)
         {
@@ -313,15 +311,9 @@ namespace ReactiveUI.Fody
                 yield return this;
             }
 
-            public override string ToString()
-            {
-                return $"{Instruction} - ({string.Join(", ", NeededInstructions.Select(x => x.ToString()))})";
-            }
+            public override string ToString() => $"{Instruction} - ({string.Join(", ", NeededInstructions.Select(x => x.ToString()))})";
 
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }

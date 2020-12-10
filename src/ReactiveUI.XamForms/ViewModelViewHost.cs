@@ -61,7 +61,7 @@ namespace ReactiveUI.XamForms
 
             var vmAndContract = this.WhenAnyValue(x => x.ViewModel).CombineLatest(
                 this.WhenAnyObservable(x => x.ViewContractObservable),
-                (vm, contract) => new { ViewModel = vm, Contract = contract, });
+                (vm, contract) => new { ViewModel = vm, Contract = contract });
 
             this.WhenActivated(() =>
             {
@@ -137,7 +137,7 @@ namespace ReactiveUI.XamForms
         }
 
         /// <summary>
-        /// Gets or sets the override for the view locator to use when resolving the view. If unspecified, <see cref="ViewLocator.Current"/> will be used.
+        /// Gets or sets the override for the view locator to use when resolving the view. If unspecified, <see cref="ViewLocator.Defaultcontent"/> will be used.
         /// </summary>
         public IViewLocator? ViewLocator { get; set; }
     }

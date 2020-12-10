@@ -136,10 +136,7 @@ namespace ReactiveUI.Fody.Helpers
         /// <returns>
         /// A return value which should be set to the property we are interested in.
         /// </returns>
-        public static TRet ToFodyProperty<TRet>(this IObservable<TRet> target, bool deferSubscription = false, IScheduler? scheduler = null)
-        {
-            throw new NotImplementedException("This should be replaced by the FODY.");
-        }
+        public static TRet ToFodyProperty<TRet>(this IObservable<TRet> target, bool deferSubscription = false, IScheduler? scheduler = null) => throw new NotImplementedException("This should be replaced by the FODY.");
 
         private static PropertyInfo GetPropertyInfo(this LambdaExpression expression)
         {
