@@ -11,14 +11,15 @@ namespace ReactiveUI.Tests
     {
         private readonly ObservableAsPropertyHelper<bool> _A;
 
-        public RaceConditionFixture() =>
-
+        public RaceConditionFixture()
+        {
             // We need to generate a value on subscription
             // which is different than the default value.
             // This triggers the property change firing
             // upon subscription in the ObservableAsPropertyHelper
             // constructor.
             Observables.True.Do(_ => Count++).ToProperty(this, x => x.A, out _A);
+        }
 
         public int Count { get; set; }
 

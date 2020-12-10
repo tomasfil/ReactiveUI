@@ -57,7 +57,10 @@ namespace ReactiveUI
         /// </summary>
         /// <param name="expression">The expression to rewrite.</param>
         /// <returns>The rewritten expression.</returns>
-        public static Expression Rewrite(Expression expression) => expressionRewriter.Visit(expression);
+        public static Expression Rewrite(Expression expression)
+        {
+            return expressionRewriter.Visit(expression);
+        }
 
         /// <summary>
         /// Will convert a Expression which points towards a property
@@ -438,10 +441,12 @@ namespace ReactiveUI
         [SuppressMessage("Microsoft.Performance", "CA1801", Justification = "TViewModel used to help generic calling.")]
         internal static IObservable<object> ViewModelWhenAnyValue<TView, TViewModel>(TViewModel? viewModel, TView view, Expression expression)
             where TView : class, IViewFor
-            where TViewModel : class =>
-            view.WhenAnyValue(x => x.ViewModel)
+            where TViewModel : class
+        {
+            return view.WhenAnyValue(x => x.ViewModel)
                 .Where(x => x != null)
                 .Select(x => ((TViewModel)x!).WhenAnyDynamic(expression, y => y.Value))
                 .Switch();
+        }
     }
 }

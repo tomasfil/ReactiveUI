@@ -16,12 +16,13 @@ namespace ReactiveUI
     public class IROObservableForProperty : ICreatesObservableForProperty
     {
         /// <inheritdoc/>
-        public int GetAffinityForObject(Type type, string propertyName, bool beforeChanged = false) =>
-
+        public int GetAffinityForObject(Type type, string propertyName, bool beforeChanged = false)
+        {
             // NB: Since every IReactiveObject is also an INPC, we need to bind more
             // tightly than INPCObservableForProperty, so we return 10 here
             // instead of one
-            typeof(IReactiveObject).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()) ? 10 : 0;
+            return typeof(IReactiveObject).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()) ? 10 : 0;
+        }
 
         /// <inheritdoc/>
         public IObservable<IObservedChange<object, object?>> GetNotificationForProperty(object sender, Expression expression, string propertyName, bool beforeChanged = false, bool suppressWarnings = false)
@@ -31,7 +32,8 @@ namespace ReactiveUI
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            if (!(sender is IReactiveObject iro))
+            var iro = sender as IReactiveObject;
+            if (iro == null)
             {
                 throw new ArgumentException("Sender doesn't implement IReactiveObject");
             }

@@ -86,7 +86,9 @@ namespace ReactiveUI
                 throw new ArgumentNullException(nameof(view));
             }
 
-            foreach (var member in view.GetWireUpMembers(resolveMembers))
+            var members = view.GetWireUpMembers(resolveMembers);
+
+            foreach (var member in members)
             {
                 try
                 {
@@ -151,7 +153,9 @@ namespace ReactiveUI
                 throw new ArgumentNullException(nameof(activity));
             }
 
-            foreach (var member in activity.GetWireUpMembers(resolveMembers))
+            var members = activity.GetWireUpMembers(resolveMembers);
+
+            foreach (var member in members)
             {
                 try
                 {

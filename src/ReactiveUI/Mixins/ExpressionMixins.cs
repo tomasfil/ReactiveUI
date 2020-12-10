@@ -26,11 +26,6 @@ namespace ReactiveUI
         /// <returns>An enumerable of expressions.</returns>
         public static IEnumerable<Expression> GetExpressionChain(this Expression expression)
         {
-            if (expression is null)
-            {
-                throw new ArgumentNullException(nameof(expression));
-            }
-
             var expressions = new List<Expression>();
             Expression? node = expression;
 

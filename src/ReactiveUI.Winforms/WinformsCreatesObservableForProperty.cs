@@ -5,10 +5,12 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reflection;
+using System.Windows.Forms;
 
 using Splat;
 
@@ -56,7 +58,7 @@ namespace ReactiveUI.Winforms
             return Observable.Create<IObservedChange<object, object?>>(subj =>
             {
                 bool completed = false;
-                var handler = new EventHandler((_, _) =>
+                var handler = new EventHandler((o, e) =>
                 {
                     if (completed)
                     {

@@ -47,7 +47,10 @@ namespace ReactiveUI
             },
             RxApp.SmallCacheLimit);
 
-        static PropertyBinderImplementation() => RxApp.EnsureInitialized();
+        static PropertyBinderImplementation()
+        {
+            RxApp.EnsureInitialized();
+        }
 
         private delegate bool OutFunc<in T1, T2>(T1 t1, out T2 t2);
 
@@ -282,7 +285,10 @@ namespace ReactiveUI
             return disposable;
         }
 
-        internal static IBindingTypeConverter? GetConverterForTypes(Type lhs, Type rhs) => _typeConverterCache.Get((lhs, rhs));
+        internal static IBindingTypeConverter? GetConverterForTypes(Type lhs, Type rhs)
+        {
+            return _typeConverterCache.Get((lhs, rhs));
+        }
 
         private static Func<object?, object?, object?[]?, object?>? GetSetConverter(Type? fromType, Type targetType)
         {

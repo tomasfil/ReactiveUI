@@ -168,7 +168,7 @@ namespace ReactiveUI
 #if UIKIT
             child.WillMoveToParentViewController(null);
 #endif
-            child.View?.RemoveFromSuperview();
+            child.View.RemoveFromSuperview();
             child.RemoveFromParentViewController();
         }
 

@@ -34,13 +34,11 @@ namespace ReactiveUI.Winforms
             registerFunction(() => new TableContentSetMethodBindingConverter(), typeof(ISetMethodBindingConverter));
             registerFunction(() => new ComponentModelTypeConverter(), typeof(IBindingTypeConverter));
 
-            if (ModeDetector.InUnitTestRunner())
+            if (!ModeDetector.InUnitTestRunner())
             {
-                return;
+                WindowsFormsSynchronizationContext.AutoInstall = true;
+                RxApp.MainThreadScheduler = new WaitForDispatcherScheduler(() => new SynchronizationContextScheduler(new WindowsFormsSynchronizationContext()));
             }
-
-            WindowsFormsSynchronizationContext.AutoInstall = true;
-            RxApp.MainThreadScheduler = new WaitForDispatcherScheduler(() => new SynchronizationContextScheduler(new WindowsFormsSynchronizationContext()));
         }
     }
 }

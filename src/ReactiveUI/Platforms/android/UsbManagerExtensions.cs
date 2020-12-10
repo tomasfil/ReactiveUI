@@ -87,8 +87,8 @@ namespace ReactiveUI
                     return;
                 }
 
-                var permissionGranted = intent?.GetBooleanExtra(UsbManager.ExtraPermissionGranted, false);
-                _observer.OnNext(permissionGranted == true);
+                var permissionGranted = intent.GetBooleanExtra(UsbManager.ExtraPermissionGranted, false);
+                _observer.OnNext(permissionGranted);
                 _observer.OnCompleted();
             }
         }
@@ -120,8 +120,8 @@ namespace ReactiveUI
                     return;
                 }
 
-                var permissionGranted = intent?.GetBooleanExtra(UsbManager.ExtraPermissionGranted, false);
-                _observer.OnNext(permissionGranted == true);
+                var permissionGranted = intent.GetBooleanExtra(UsbManager.ExtraPermissionGranted, false);
+                _observer.OnNext(permissionGranted);
                 _observer.OnCompleted();
             }
         }

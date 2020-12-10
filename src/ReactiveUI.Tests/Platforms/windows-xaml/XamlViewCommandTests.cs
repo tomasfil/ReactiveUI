@@ -3,13 +3,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-#if NETFX_CORE
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System;
 using System.Reactive.Linq;
 
 using Xunit;
+
+#if NETFX_CORE
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Automation.Provider;
@@ -17,14 +16,10 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Markup;
 #else
-using System;
-using System.Reactive.Linq;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
-
-using Xunit;
-
+using System.Windows.Controls.Primitives;
 using FactAttribute = Xunit.WpfFactAttribute;
 #endif
 

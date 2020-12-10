@@ -111,11 +111,6 @@ namespace ReactiveUI
 
             public void OnActivitySaveInstanceState(Activity? activity, Bundle? outState)
             {
-                if (outState == null)
-                {
-                    return;
-                }
-
                 // NB: This is so that we always have a bundle on OnCreate, so that
                 // we can tell the difference between created from scratch and resume.
                 outState?.PutString("___dummy_value_please_create_a_bundle", "VeryYes");

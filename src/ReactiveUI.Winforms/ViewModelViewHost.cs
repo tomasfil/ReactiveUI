@@ -18,7 +18,7 @@ namespace ReactiveUI.Winforms
     [DefaultProperty("ViewModel")]
     public partial class ViewModelControlHost : UserControl, IReactiveObject, IViewFor
     {
-        private readonly CompositeDisposable _disposables = new();
+        private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private Control? _defaultContent;
         private IObservable<string>? _viewContractObservable;
         private object? _viewModel;
@@ -121,10 +121,16 @@ namespace ReactiveUI.Winforms
         }
 
         /// <inheritdoc/>
-        void IReactiveObject.RaisePropertyChanging(PropertyChangingEventArgs args) => PropertyChanging?.Invoke(this, args);
+        void IReactiveObject.RaisePropertyChanging(PropertyChangingEventArgs args)
+        {
+            PropertyChanging?.Invoke(this, args);
+        }
 
         /// <inheritdoc/>
-        void IReactiveObject.RaisePropertyChanged(PropertyChangedEventArgs args) => PropertyChanged?.Invoke(this, args);
+        void IReactiveObject.RaisePropertyChanged(PropertyChangedEventArgs args)
+        {
+            PropertyChanged?.Invoke(this, args);
+        }
 
         /// <summary>
         /// Clean up any resources being used.
@@ -213,13 +219,11 @@ namespace ReactiveUI.Winforms
 
                     IViewLocator viewLocator = ViewLocator ?? ReactiveUI.ViewLocator.Current;
                     IViewFor? view = viewLocator.ResolveView(x.ViewModel, x.Contract);
-                    if (view == null)
+                    if (view != null)
                     {
-                        return;
+                        view.ViewModel = x.ViewModel;
+                        Content = view;
                     }
-
-                    view.ViewModel = x.ViewModel;
-                    Content = view;
                 },
                 RxApp.DefaultExceptionHandler!.OnNext);
         }
