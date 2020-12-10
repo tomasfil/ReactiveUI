@@ -11,7 +11,7 @@ namespace ReactiveUI.Fody.Helpers
     /// Marks a property for raising a WhenPropertyChanged method call for another property when the value changes.
     /// </summary>
     /// <seealso cref="System.Attribute" />
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Property)]
     public class ReactiveDependencyAttribute : Attribute
     {
         /// <summary>

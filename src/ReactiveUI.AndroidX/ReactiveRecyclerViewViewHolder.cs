@@ -95,32 +95,28 @@ namespace ReactiveUI.AndroidX
         public event PropertyChangedEventHandler? PropertyChanged;
 
         /// <summary>
-        /// Gets an observable that signals that this ViewHolder has been selected.
-        ///
-        /// The <see cref="int"/> is the position of this ViewHolder in the <see cref="RecyclerView"/>
-        /// and corresponds to the <see cref="RecyclerView.ViewHolder.AdapterPosition"/> property.
+        /// <para>Gets an observable that signals that this ViewHolder has been selected.</para>
+        /// <para>The <see cref="int"/> is the position of this ViewHolder in the <see cref="RecyclerView"/>
+        /// and corresponds to the <see cref="RecyclerView.ViewHolder.AdapterPosition"/> property.</para>
         /// </summary>
         public IObservable<int> Selected { get; }
 
         /// <summary>
-        /// Gets an observable that signals that this ViewHolder has been selected.
-        ///
-        /// The <see cref="IObservable{TViewModel}"/> is the ViewModel of this ViewHolder in the <see cref="RecyclerView"/>.
+        /// <para>Gets an observable that signals that this ViewHolder has been selected.</para>
+        /// <para>The <see cref="IObservable{TViewModel}"/> is the ViewModel of this ViewHolder in the <see cref="RecyclerView"/>.</para>
         /// </summary>
         public IObservable<TViewModel?> SelectedWithViewModel { get; }
 
         /// <summary>
-        /// Gets an observable that signals that this ViewHolder has been long-clicked.
-        ///
-        /// The <see cref="int"/> is the position of this ViewHolder in the <see cref="RecyclerView"/>
-        /// and corresponds to the <see cref="RecyclerView.ViewHolder.AdapterPosition"/> property.
+        /// <para>Gets an observable that signals that this ViewHolder has been long-clicked.</para>
+        /// <para>The <see cref="int"/> is the position of this ViewHolder in the <see cref="RecyclerView"/>
+        /// and corresponds to the <see cref="RecyclerView.ViewHolder.AdapterPosition"/> property.</para>
         /// </summary>
         public IObservable<int> LongClicked { get; }
 
         /// <summary>
-        /// Gets an observable that signals that this ViewHolder has been long-clicked.
-        ///
-        /// The <see cref="IObservable{TViewModel}"/> is the ViewModel of this ViewHolder in the <see cref="RecyclerView"/>.
+        /// <para>Gets an observable that signals that this ViewHolder has been long-clicked.</para>
+        /// <para>The <see cref="IObservable{TViewModel}"/> is the ViewModel of this ViewHolder in the <see cref="RecyclerView"/>.</para>
         /// </summary>
         public IObservable<TViewModel?> LongClickedWithViewModel { get; }
 

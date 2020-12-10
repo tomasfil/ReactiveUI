@@ -16,7 +16,7 @@ namespace ReactiveUI.Fody
         public TypeNode(TypeDefinition typeDefinition, List<PropertyData> propertyDatas)
         {
             TypeDefinition = typeDefinition ?? throw new ArgumentNullException(nameof(typeDefinition));
-            PropertyDatas = propertyDatas?.ToList() ?? throw new ArgumentNullException(nameof(propertyDatas));
+            PropertyDatas = propertyDatas.ToList() ?? throw new ArgumentNullException(nameof(propertyDatas));
         }
 
         public TypeDefinition TypeDefinition { get; }

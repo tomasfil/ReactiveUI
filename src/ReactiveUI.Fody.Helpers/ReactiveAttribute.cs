@@ -11,7 +11,7 @@ namespace ReactiveUI.Fody.Helpers
     /// Attribute that marks property for INotifyPropertyChanged weaving.
     /// </summary>
     /// <seealso cref="System.Attribute" />
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Property)]
     public class ReactiveAttribute : Attribute
     {
     }

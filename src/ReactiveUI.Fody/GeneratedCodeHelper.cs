@@ -12,7 +12,7 @@ namespace ReactiveUI.Fody
     internal static class GeneratedCodeHelper
     {
         private static readonly string AssemblyVersion = typeof(ModuleWeaver).Assembly.GetName().Version?.ToString() ?? throw new InvalidOperationException("Could not get a valid version from the Module Weaver assembly.");
-        private static readonly string AssemblyName = typeof(ModuleWeaver).Assembly.GetName().Name;
+        private static readonly string AssemblyName = typeof(ModuleWeaver).Assembly.GetName().Name ?? throw new InvalidOperationException("Could not get a valid Assembly Name");
 
         public static void MarkAsGeneratedCode(ModuleWeaver moduleWeaver, Collection<CustomAttribute> customAttributes)
         {

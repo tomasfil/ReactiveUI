@@ -16,7 +16,7 @@ using Mono.Cecil.Rocks;
 namespace ReactiveUI.Fody
 {
     /// <summary>
-    /// Generates the OAPH property helper.
+    /// Generates the ObservableAsPropertyHelper property helper.
     /// </summary>
     public partial class ModuleWeaver
     {
@@ -60,14 +60,16 @@ namespace ReactiveUI.Fody
             foreach (var constructor in constructors)
             {
                 var fieldAssignment = constructor.Body.Instructions.SingleOrDefault(x => Equals(x.Operand, oldFieldDefinition));
-                if (fieldAssignment != null)
+                if (fieldAssignment == null)
                 {
-                    var value = GetDependentInstructions(constructor, fieldAssignment);
+                    continue;
+                }
 
-                    if (value != null)
-                    {
-                        yield return value;
-                    }
+                var value = GetDependentInstructions(constructor, fieldAssignment);
+
+                if (value != null)
+                {
+                    yield return value;
                 }
             }
         }
@@ -193,7 +195,7 @@ namespace ReactiveUI.Fody
 
             methodInstructions.Insert(
                 index,
-                Instruction.Create(OpCodes.Call, toPropertyMethodCall),  // Invoke our OAPH create method.
+                Instruction.Create(OpCodes.Call, toPropertyMethodCall),  // Invoke our ObservableAsPropertyHelpe create method.
                 Instruction.Create(OpCodes.Stfld, field));
 
             MakePropertyObservable(propertyData, field, oldBackingField.FieldType);
@@ -219,8 +221,6 @@ namespace ReactiveUI.Fody
             method.Body.SimplifyMacros();
 
             var instructions = method.Body.Instructions;
-
-            var ilProcessor = method.Body.GetILProcessor();
 
             for (int i = 0; i < instructions.Count; ++i)
             {

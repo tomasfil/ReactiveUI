@@ -5,8 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -61,14 +59,15 @@ namespace ReactiveUI.Fody
                 return;
             }
 
-            if (!ExecutePropertyChanged(propertyData, typeNode.TypeDefinition))
+            if (ExecutePropertyChanged(propertyData, typeNode.TypeDefinition))
             {
-                WriteError($"Property {propertyData.PropertyDefinition.FullName} could not be find valid backing field and therefore is not suitable for ReactiveAttribute weaving.");
                 return;
             }
+
+            WriteError($"Property {propertyData.PropertyDefinition.FullName} could not be find valid backing field and therefore is not suitable for ReactiveAttribute weaving.");
         }
 
-        private static void AddSimpleInvokerCall(IndexMetadata indexMetadata, Collection<Instruction> instructions, FieldReference backingField, PropertyReference property, MethodReference method, TypeDefinition typeDefinition)
+        private static void AddSimpleInvokerCall(IndexMetadata indexMetadata, IList<Instruction> instructions, FieldReference backingField, PropertyReference property, MethodReference method, TypeReference typeDefinition)
         {
             // Remove the current from the set location.
             for (var i = 0; i < indexMetadata.Count; ++i)
