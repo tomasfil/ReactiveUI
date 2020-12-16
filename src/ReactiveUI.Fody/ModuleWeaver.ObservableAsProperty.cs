@@ -115,8 +115,7 @@ namespace ReactiveUI.Fody
 
             var evaluationStack = new Stack<InstructionBlock>();
             InstructionBlock? methodBlock = null;
-            int index = 0;
-            while (iterator != null)
+            for (int index = 0; iterator != null; index++)
             {
                 var currentBlock = new InstructionBlock(iterator, parentMethodDefinition, index);
                 var iteratorPopDelta = iterator.GetPopDelta();
@@ -147,7 +146,6 @@ namespace ReactiveUI.Fody
                 }
 
                 iterator = iterator.Next;
-                index++;
             }
 
             return methodBlock;

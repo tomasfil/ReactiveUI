@@ -16,7 +16,7 @@ namespace ReactiveUI.Fody.Tests
         static ObservableAsPropertyTests()
         {
             var moduleWeaver = new ModuleWeaver();
-            _testResult = moduleWeaver.ExecuteTestRun("ReactiveUI.Fody.Tests.OAPHAssembly.dll", runPeVerify: false);
+            _testResult = moduleWeaver.ExecuteTestRun("ReactiveUI.Fody.TestArtifact.OAPHAssembly.dll", runPeVerify: false);
         }
 
         ////[Fact]
@@ -29,14 +29,22 @@ namespace ReactiveUI.Fody.Tests
         [Fact]
         public void AllowObservableAsPropertyAttributeOnAccessor()
         {
-            var model = new Issue11TestModel("foo");
-            Assert.Equal("foo", model.MyProperty);
+            var model = (Issue11TestModel?)_testResult.Assembly.CreateInstance(
+                typeof(Issue11TestModel).FullName!,
+                false,
+                System.Reflection.BindingFlags.Public,
+                default,
+                new[] { "foo" },
+                default,
+                default);
+
+            Assert.Equal("foo", model?.MyProperty);
         }
 
         [Fact]
         public void AccessingAChainedObservableAsPropertyOfDoubleDoesntThrow()
         {
-            var vm = new Issue13TestModel();
+            var vm = _testResult.GetInstance(typeof(Issue13TestModel).FullName!);
             Assert.Equal(0.0, vm.P2);
         }
     }
