@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <DisableFody>true</DisableFody>
+    <NoWarn>$(NoWarn);SA1600</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
