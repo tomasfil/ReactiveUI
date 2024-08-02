@@ -1,15 +1,13 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
+
 using Foundation;
+
 using UIKit;
 
 namespace ReactiveUI;
@@ -57,7 +55,7 @@ public abstract class ReactiveNavigationController : UINavigationController, IRe
     /// Initializes a new instance of the <see cref="ReactiveNavigationController"/> class.
     /// </summary>
     /// <param name="handle">The pointer.</param>
-    protected ReactiveNavigationController(IntPtr handle)
+    protected ReactiveNavigationController(in IntPtr handle)
         : base(handle)
     {
     }
@@ -197,7 +195,7 @@ public abstract class ReactiveNavigationController<TViewModel> : ReactiveNavigat
     /// Initializes a new instance of the <see cref="ReactiveNavigationController{TViewModel}"/> class.
     /// </summary>
     /// <param name="handle">The pointer.</param>
-    protected ReactiveNavigationController(IntPtr handle)
+    protected ReactiveNavigationController(in IntPtr handle)
         : base(handle)
     {
     }

@@ -1,14 +1,9 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Reactive.Linq;
-using Splat;
 
 namespace ReactiveUI;
 
@@ -19,7 +14,7 @@ namespace ReactiveUI;
 /// </summary>
 public class POCOObservableForProperty : ICreatesObservableForProperty
 {
-    private static readonly IDictionary<(Type, string), bool> _hasWarned = new ConcurrentDictionary<(Type, string), bool>();
+    private static readonly ConcurrentDictionary<(Type, string), bool> _hasWarned = new();
 
     /// <inheritdoc/>
     public int GetAffinityForObject(Type type, string propertyName, bool beforeChanged = false) => 1;
@@ -27,10 +22,7 @@ public class POCOObservableForProperty : ICreatesObservableForProperty
     /// <inheritdoc/>
     public IObservable<IObservedChange<object, object?>> GetNotificationForProperty(object sender, Expression expression, string propertyName, bool beforeChanged = false, bool suppressWarnings = false)
     {
-        if (sender is null)
-        {
-            throw new ArgumentNullException(nameof(sender));
-        }
+        sender.ArgumentNullExceptionThrowIfNull(nameof(sender));
 
         var type = sender.GetType();
         if (!_hasWarned.ContainsKey((type, propertyName)) && !suppressWarnings)
@@ -39,7 +31,7 @@ public class POCOObservableForProperty : ICreatesObservableForProperty
             _hasWarned[(type, propertyName)] = true;
         }
 
-        return Observable.Return(new ObservedChange<object, object?>(sender, expression, default), RxApp.MainThreadScheduler)
+        return Observable.Return(new ObservedChange<object, object?>(sender, expression, default), RxApp.MainThreadScheduler ?? CurrentThreadScheduler.Instance)
                          .Concat(Observable<IObservedChange<object, object?>>.Never);
     }
 }

@@ -1,18 +1,9 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Concurrency;
-using System.Reactive.Disposables;
-using Android.App;
 using Android.OS;
-using ReactiveUI;
-using Splat;
 
 namespace ReactiveUI;
 
@@ -21,24 +12,16 @@ namespace ReactiveUI;
 /// Activity's main thread. This is the moral equivalent of
 /// DispatcherScheduler.
 /// </summary>
-public class HandlerScheduler : IScheduler, IEnableLogger
+/// <remarks>
+/// Initializes a new instance of the <see cref="HandlerScheduler"/> class.
+/// </remarks>
+/// <param name="handler">The handler.</param>
+public class HandlerScheduler(Handler handler) : IScheduler, IEnableLogger
 {
-    private readonly Handler _handler;
-    private readonly long _looperId;
+    private readonly Handler _handler = handler;
 
     static HandlerScheduler() =>
-        MainThreadScheduler = new HandlerScheduler(new Handler(Looper.MainLooper!), Looper.MainLooper?.Thread?.Id);
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="HandlerScheduler"/> class.
-    /// </summary>
-    /// <param name="handler">The handler.</param>
-    /// <param name="threadIdAssociatedWithHandler">The thread identifier associated with handler.</param>
-    public HandlerScheduler(Handler handler, long? threadIdAssociatedWithHandler)
-    {
-        _handler = handler;
-        _looperId = threadIdAssociatedWithHandler ?? -1;
-    }
+        MainThreadScheduler = new HandlerScheduler(new(Looper.MainLooper!));
 
     /// <summary>
     /// Gets a common instance to avoid allocations to the MainThread for the HandlerScheduler.

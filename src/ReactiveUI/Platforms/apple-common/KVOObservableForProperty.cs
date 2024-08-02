@@ -1,18 +1,13 @@
-// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
 using System.Globalization;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+
 using Foundation;
-using Splat;
 
 namespace ReactiveUI;
 
@@ -118,14 +113,17 @@ public class KVOObservableForProperty : ICreatesObservableForProperty
             goto attemptGuess;
         }
 
-        return attr.Selector;
+        if (attr.Selector is not null)
+        {
+            return attr.Selector;
+        }
 
-        attemptGuess:
+    attemptGuess:
         if (propIsBoolean)
         {
             propertyName = "Is" + propertyName;
         }
 
-        return char.ToLowerInvariant(propertyName[0]).ToString(CultureInfo.InvariantCulture) + propertyName.Substring(1);
+        return string.Concat(char.ToLowerInvariant(propertyName[0]).ToString(CultureInfo.InvariantCulture), propertyName.AsSpan(1));
     }
 }

@@ -1,15 +1,10 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ReactiveUI;
 
@@ -20,12 +15,9 @@ internal class ExpressionRewriter : ExpressionVisitor
 {
     public override Expression Visit(Expression? node)
     {
-        if (node is null)
-        {
-            throw new ArgumentNullException(nameof(node));
-        }
+        node.ArgumentNullExceptionThrowIfNull(nameof(node));
 
-        switch (node.NodeType)
+        switch (node!.NodeType)
         {
             case ExpressionType.ArrayIndex:
                 return VisitBinary((BinaryExpression)node);
@@ -61,7 +53,7 @@ internal class ExpressionRewriter : ExpressionVisitor
 
     protected override Expression VisitBinary(BinaryExpression node)
     {
-        if (!(node.Right is ConstantExpression))
+        if (node.Right is not ConstantExpression)
         {
             throw new NotSupportedException("Array index expressions are only supported with constants.");
         }
@@ -70,7 +62,7 @@ internal class ExpressionRewriter : ExpressionVisitor
         var right = Visit(node.Right);
 
         // Translate arrayindex into normal index expression
-        return Expression.MakeIndex(left, left.Type.GetRuntimeProperty("Item"), new[] { right });
+        return Expression.MakeIndex(left, left.Type.GetRuntimeProperty("Item"), [right]);
     }
 
     protected override Expression VisitUnary(UnaryExpression node)
@@ -81,13 +73,11 @@ internal class ExpressionRewriter : ExpressionVisitor
 
             var memberInfo = expression.Type.GetRuntimeProperty("Length");
 
-            if (memberInfo is null)
+            return memberInfo switch
             {
-                throw new InvalidOperationException("Could not find valid information for the array length operator.");
-            }
-
-            // translate arraylength into normal member expression
-            return Expression.MakeMemberAccess(expression, memberInfo);
+                null => throw new InvalidOperationException("Could not find valid information for the array length operator."),
+                _ => Expression.MakeMemberAccess(expression, memberInfo)
+            };
         }
         else if (node.NodeType == ExpressionType.Convert && node.Operand is not null)
         {
@@ -106,7 +96,7 @@ internal class ExpressionRewriter : ExpressionVisitor
     protected override Expression VisitMethodCall(MethodCallExpression node)
     {
         // Rewrite a method call to an indexer as an index expression
-        if (node.Arguments.Any(e => !(e is ConstantExpression)) || !node.Method.IsSpecialName)
+        if (node.Arguments.Any(e => e is not ConstantExpression) || !node.Method.IsSpecialName)
         {
             throw new NotSupportedException("Index expressions are only supported with constants.");
         }
@@ -125,7 +115,7 @@ internal class ExpressionRewriter : ExpressionVisitor
 
     protected override Expression VisitIndex(IndexExpression node)
     {
-        if (node.Arguments.Any(e => !(e is ConstantExpression)))
+        if (node.Arguments.Any(e => e is not ConstantExpression))
         {
             throw new NotSupportedException("Index expressions are only supported with constants.");
         }

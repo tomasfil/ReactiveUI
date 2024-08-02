@@ -1,12 +1,9 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Linq.Expressions;
 using System.Windows.Input;
-using Splat;
 
 namespace ReactiveUI;
 
@@ -53,7 +50,7 @@ public static class CommandBinder
         Expression<Func<TView, TControl>> controlName,
         IObservable<TParam?> withParameter,
         string? toEvent = null)
-        where TView : class, IViewFor<TViewModel>
+        where TView : class, IViewFor
         where TViewModel : class
         where TProp : ICommand =>
         _binderImplementation.BindCommand(viewModel, view, propertyName, controlName, withParameter, toEvent);
@@ -82,7 +79,7 @@ public static class CommandBinder
         Expression<Func<TViewModel, TProp?>> propertyName,
         Expression<Func<TView, TControl>> controlName,
         string? toEvent = null)
-        where TView : class, IViewFor<TViewModel>
+        where TView : class, IViewFor
         where TViewModel : class
         where TProp : ICommand =>
         _binderImplementation.BindCommand(viewModel, view, propertyName, controlName, toEvent);
@@ -115,14 +112,11 @@ public static class CommandBinder
         Expression<Func<TView, TControl>> controlName,
         Expression<Func<TViewModel, TParam?>> withParameter,
         string? toEvent = null)
-        where TView : class, IViewFor<TViewModel>
+        where TView : class, IViewFor
         where TViewModel : class
         where TProp : ICommand
     {
-        if (view is null)
-        {
-            throw new ArgumentNullException(nameof(view));
-        }
+        view.ArgumentNullExceptionThrowIfNull(nameof(view));
 
         return _binderImplementation.BindCommand(
                                                  viewModel,

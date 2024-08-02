@@ -1,17 +1,11 @@
-// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Reactive;
-using System.Reactive.Concurrency;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using AppKit;
+
 using Foundation;
-using Splat;
 
 namespace ReactiveUI;
 
@@ -38,13 +32,13 @@ public class AutoSuspendHelper : IEnableLogger, IDisposable
     public AutoSuspendHelper(NSApplicationDelegate appDelegate)
     {
         Reflection.ThrowIfMethodsNotOverloaded(
-                                               "AutoSuspendHelper",
+                                               nameof(AutoSuspendHelper),
                                                appDelegate,
-                                               "ApplicationShouldTerminate",
-                                               "DidFinishLaunching",
-                                               "DidResignActive",
-                                               "DidBecomeActive",
-                                               "DidHide");
+                                               nameof(ApplicationShouldTerminate),
+                                               nameof(DidFinishLaunching),
+                                               nameof(DidResignActive),
+                                               nameof(DidBecomeActive),
+                                               nameof(DidHide));
 
         RxApp.SuspensionHost.IsLaunchingNew = Observable<Unit>.Never;
         RxApp.SuspensionHost.IsResuming = _isResuming;
@@ -73,30 +67,28 @@ public class AutoSuspendHelper : IEnableLogger, IDisposable
     }
 
     /// <summary>
-    /// Dids the finish launching.
+    /// Did finish launching.
     /// </summary>
     /// <param name="notification">The notification.</param>
-#pragma warning disable RCS1163 // Unused parameter.
     public void DidFinishLaunching(NSNotification notification) => _isResuming.OnNext(Unit.Default);
 
     /// <summary>
-    /// Dids the resign active.
+    /// Did resign active.
     /// </summary>
     /// <param name="notification">The notification.</param>
     public void DidResignActive(NSNotification notification) => _shouldPersistState.OnNext(Disposable.Empty);
 
     /// <summary>
-    /// Dids the become active.
+    /// Did become active.
     /// </summary>
     /// <param name="notification">The notification.</param>
     public void DidBecomeActive(NSNotification notification) => _isUnpausing.OnNext(Unit.Default);
 
     /// <summary>
-    /// Dids the hide.
+    /// Did hide.
     /// </summary>
     /// <param name="notification">The notification.</param>
     public void DidHide(NSNotification notification) => _shouldPersistState.OnNext(Disposable.Empty);
-#pragma warning restore RCS1163 // Unused parameter.
 
     /// <inheritdoc />
     public void Dispose()

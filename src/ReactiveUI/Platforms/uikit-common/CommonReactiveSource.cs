@@ -1,24 +1,17 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Concurrency;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Threading;
+
 using DynamicData;
 using DynamicData.Binding;
+
 using Foundation;
-using Splat;
 
 namespace ReactiveUI;
 
@@ -40,12 +33,12 @@ internal sealed class CommonReactiveSource<TSource, TUIView, TUIViewCell, TSecti
     public CommonReactiveSource(IUICollViewAdapter<TUIView, TUIViewCell> adapter)
     {
         _adapter = adapter;
-        _mainThreadId = Thread.CurrentThread.ManagedThreadId;
-        _mainDisposables = new CompositeDisposable();
+        _mainThreadId = Environment.CurrentManagedThreadId;
+        _mainDisposables = [];
         _sectionInfoDisposable = new SerialDisposable();
         _mainDisposables.Add(_sectionInfoDisposable);
-        _pendingChanges = new List<(int section, PendingChange pendingChange)>();
-        _sectionInfo = Array.Empty<TSectionInfo>();
+        _pendingChanges = [];
+        _sectionInfo = [];
 
         _mainDisposables.Add(
                              this
@@ -75,7 +68,7 @@ internal sealed class CommonReactiveSource<TSource, TUIView, TUIViewCell, TSecti
 
     public int NumberOfSections()
     {
-        Debug.Assert(Thread.CurrentThread.ManagedThreadId == _mainThreadId, "The thread is not the main thread.");
+        Debug.Assert(Environment.CurrentManagedThreadId == _mainThreadId, "The thread is not the main thread.");
 
         var count = SectionInfo.Count;
         this.Log().Debug(CultureInfo.InvariantCulture, "Reporting number of sections = {0}", count);
@@ -85,7 +78,7 @@ internal sealed class CommonReactiveSource<TSource, TUIView, TUIViewCell, TSecti
 
     public int RowsInSection(int section)
     {
-        Debug.Assert(Thread.CurrentThread.ManagedThreadId == _mainThreadId, "The thread is not the main thread.");
+        Debug.Assert(Environment.CurrentManagedThreadId == _mainThreadId, "The thread is not the main thread.");
 
         var list = (IList)SectionInfo[section].Collection!;
         var count = list.Count;
@@ -96,7 +89,7 @@ internal sealed class CommonReactiveSource<TSource, TUIView, TUIViewCell, TSecti
 
     public object? ItemAt(NSIndexPath path)
     {
-        Debug.Assert(Thread.CurrentThread.ManagedThreadId == _mainThreadId, "The thread is not the main thread.");
+        Debug.Assert(Environment.CurrentManagedThreadId == _mainThreadId, "The thread is not the main thread.");
 
         var list = (IList)SectionInfo[path.Section].Collection!;
         this.Log().Debug(CultureInfo.InvariantCulture, "Returning item at {0}-{1}", path.Section, path.Row);
@@ -106,7 +99,7 @@ internal sealed class CommonReactiveSource<TSource, TUIView, TUIViewCell, TSecti
 
     public TUIViewCell GetCell(NSIndexPath indexPath)
     {
-        Debug.Assert(Thread.CurrentThread.ManagedThreadId == _mainThreadId, "The thread is not the main thread.");
+        Debug.Assert(Environment.CurrentManagedThreadId == _mainThreadId, "The thread is not the main thread.");
 
         this.Log().Debug(CultureInfo.InvariantCulture, "Getting cell for index path {0}-{1}", indexPath.Section, indexPath.Row);
         var section = SectionInfo[indexPath.Section];
@@ -320,7 +313,7 @@ internal sealed class CommonReactiveSource<TSource, TUIView, TUIViewCell, TSecti
 
     private void ApplyPendingChanges(int sectionInfoId)
     {
-        Debug.Assert(Thread.CurrentThread.ManagedThreadId == _mainThreadId, "The thread is not the main thread.");
+        Debug.Assert(Environment.CurrentManagedThreadId == _mainThreadId, "The thread is not the main thread.");
         Debug.Assert(_isCollectingChanges, "Currently there are no changes to collect");
         this.Log().Debug(CultureInfo.InvariantCulture, "[#{0}] Applying pending changes", sectionInfoId);
 
@@ -392,11 +385,11 @@ internal sealed class CommonReactiveSource<TSource, TUIView, TUIViewCell, TSecti
                                                 switch (normalizedUpdate?.Type)
                                                 {
                                                     case UpdateType.Add:
-                                                        DoUpdate(_adapter.InsertItems, new[] { normalizedUpdate.Index }, section);
+                                                        DoUpdate(_adapter.InsertItems, [normalizedUpdate.Index], section);
                                                         break;
 
                                                     case UpdateType.Delete:
-                                                        DoUpdate(_adapter.DeleteItems, new[] { normalizedUpdate.Index }, section);
+                                                        DoUpdate(_adapter.DeleteItems, [normalizedUpdate.Index], section);
                                                         break;
 
                                                     default:
@@ -433,7 +426,7 @@ internal sealed class CommonReactiveSource<TSource, TUIView, TUIViewCell, TSecti
 
     private void VerifyOnMainThread()
     {
-        if (Thread.CurrentThread.ManagedThreadId != _mainThreadId)
+        if (Environment.CurrentManagedThreadId != _mainThreadId)
         {
             throw new InvalidOperationException("An operation has occurred off the main thread that must be performed on it. Be sure to schedule changes to the underlying data correctly.");
         }
@@ -441,25 +434,16 @@ internal sealed class CommonReactiveSource<TSource, TUIView, TUIViewCell, TSecti
 
     // rather than storing NotifyCollectionChangeEventArgs instances, we store instances of this class instead
     // storing NotifyCollectionChangeEventArgs doesn't always work because external code can mutate the instance before we get a chance to apply it
-    private sealed class PendingChange
+    private sealed class PendingChange(NotifyCollectionChangedEventArgs ea)
     {
-        public PendingChange(NotifyCollectionChangedEventArgs ea)
-        {
-            Action = ea.Action;
-            OldItems = ea.OldItems?.Cast<object>().ToList();
-            NewItems = ea.NewItems?.Cast<object>().ToList();
-            OldStartingIndex = ea.OldStartingIndex;
-            NewStartingIndex = ea.NewStartingIndex;
-        }
+        public NotifyCollectionChangedAction Action { get; } = ea.Action;
 
-        public NotifyCollectionChangedAction Action { get; }
+        public IList? OldItems { get; } = ea.OldItems?.Cast<object>().ToList();
 
-        public IList? OldItems { get; }
+        public IList? NewItems { get; } = ea.NewItems?.Cast<object>().ToList();
 
-        public IList? NewItems { get; }
+        public int OldStartingIndex { get; } = ea.OldStartingIndex;
 
-        public int OldStartingIndex { get; }
-
-        public int NewStartingIndex { get; }
+        public int NewStartingIndex { get; } = ea.NewStartingIndex;
     }
 }

@@ -1,18 +1,9 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Reactive;
-using System.Reactive.Concurrency;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using Splat;
 
 namespace ReactiveUI;
 
@@ -22,7 +13,11 @@ namespace ReactiveUI;
 [Preserve(AllMembers = true)]
 public static class IReactiveObjectExtensions
 {
+#if NETSTANDARD || NETFRAMEWORK
     private static readonly ConditionalWeakTable<IReactiveObject, IExtensionState<IReactiveObject>> state = new();
+#else
+    private static readonly ConditionalWeakTable<IReactiveObject, IExtensionState<IReactiveObject>> state = [];
+#endif
 
     /// <summary>
     /// Contains the state information about the current status of a Reactive Object.
@@ -116,19 +111,16 @@ public static class IReactiveObjectExtensions
         [CallerMemberName] string? propertyName = null)
         where TObj : IReactiveObject
     {
-        if (propertyName is null)
-        {
-            throw new ArgumentNullException(nameof(propertyName));
-        }
+        propertyName.ArgumentNullExceptionThrowIfNull(nameof(propertyName));
 
         if (EqualityComparer<TRet>.Default.Equals(backingField, newValue))
         {
             return newValue;
         }
 
-        reactiveObject.RaisingPropertyChanging(propertyName);
+        reactiveObject.RaisingPropertyChanging(propertyName!);
         backingField = newValue;
-        reactiveObject.RaisingPropertyChanged(propertyName);
+        reactiveObject.RaisingPropertyChanged(propertyName!);
         return newValue;
     }
 
@@ -222,10 +214,7 @@ public static class IReactiveObjectExtensions
     internal static void RaisingPropertyChanging<TSender>(this TSender reactiveObject, string propertyName)
         where TSender : IReactiveObject
     {
-        if (propertyName is null)
-        {
-            throw new ArgumentNullException(nameof(propertyName));
-        }
+        propertyName.ArgumentNullExceptionThrowIfNull(nameof(propertyName));
 
         var s = state.GetValue(reactiveObject, _ => (IExtensionState<IReactiveObject>)new ExtensionState<TSender>(reactiveObject));
 
@@ -235,10 +224,7 @@ public static class IReactiveObjectExtensions
     internal static void RaisingPropertyChanged<TSender>(this TSender reactiveObject, string propertyName)
         where TSender : IReactiveObject
     {
-        if (propertyName is null)
-        {
-            throw new ArgumentNullException(nameof(propertyName));
-        }
+        propertyName.ArgumentNullExceptionThrowIfNull(nameof(propertyName));
 
         var s = state.GetValue(reactiveObject, _ => (IExtensionState<IReactiveObject>)new ExtensionState<TSender>(reactiveObject));
 

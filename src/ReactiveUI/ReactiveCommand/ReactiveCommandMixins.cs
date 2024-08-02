@@ -1,12 +1,8 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Linq.Expressions;
-using System.Reactive;
-using System.Reactive.Linq;
 using System.Windows.Input;
 
 namespace ReactiveUI;
@@ -29,13 +25,13 @@ public static class ReactiveCommandMixins
     public static IDisposable InvokeCommand<T>(this IObservable<T> item, ICommand? command)
     {
         var canExecuteChanged = Observable.FromEvent<EventHandler, Unit>(
-                                                                         eventHandler =>
-                                                                         {
-                                                                             void Handler(object? sender, EventArgs e) => eventHandler(Unit.Default);
-                                                                             return Handler;
-                                                                         },
-                                                                         h => command!.CanExecuteChanged += h,
-                                                                         h => command!.CanExecuteChanged -= h)
+                                            eventHandler =>
+                                            {
+                                                void Handler(object? sender, EventArgs e) => eventHandler(Unit.Default);
+                                                return Handler;
+                                            },
+                                            h => command!.CanExecuteChanged += h,
+                                            h => command!.CanExecuteChanged -= h)
                                           .StartWith(Unit.Default);
 
         return WithLatestFromFixed(item, canExecuteChanged, (value, _) => new InvokeCommandInfo<ICommand?, T>(command, command!.CanExecute(value), value))
@@ -80,12 +76,13 @@ public static class ReactiveCommandMixins
     {
         var commandObs = target.WhenAnyValue(commandProperty);
         var commandCanExecuteChanged = commandObs
-                                       .Select(command => command is null ? Observable<ICommand>.Empty : Observable
-                                                              .FromEvent<EventHandler, ICommand>(
-                                                               eventHandler => (_, _) => eventHandler(command),
-                                                               h => command.CanExecuteChanged += h,
-                                                               h => command.CanExecuteChanged -= h)
-                                                              .StartWith(command))
+                                       .Select(command => command is null ?
+                                            Observable<ICommand>.Empty :
+                                            Observable.FromEvent<EventHandler, ICommand>(
+                                                eventHandler => (_, _) => eventHandler(command),
+                                                h => command.CanExecuteChanged += h,
+                                                h => command.CanExecuteChanged -= h)
+                                                .StartWith(command))
                                        .Switch();
 
         return WithLatestFromFixed(item, commandCanExecuteChanged, (value, cmd) => new InvokeCommandInfo<ICommand, T>(cmd, cmd.CanExecute(value), value))
@@ -113,10 +110,10 @@ public static class ReactiveCommandMixins
         var command = target.WhenAnyValue(commandProperty);
         var invocationInfo = command
                              .Select(cmd => cmd is null ?
-                                                Observable<InvokeCommandInfo<ReactiveCommandBase<T, TResult>, T>>.Empty :
-                                                cmd
-                                                    .CanExecute
-                                                    .Select(canExecute => new InvokeCommandInfo<ReactiveCommandBase<T, TResult>, T>(cmd, canExecute)))
+                                Observable<InvokeCommandInfo<ReactiveCommandBase<T, TResult>, T>>.Empty :
+                                cmd
+                                    .CanExecute
+                                    .Select(canExecute => new InvokeCommandInfo<ReactiveCommandBase<T, TResult>, T>(cmd, canExecute)))
                              .Switch();
 
         return WithLatestFromFixed(item, invocationInfo, (value, ii) => ii.WithValue(value))

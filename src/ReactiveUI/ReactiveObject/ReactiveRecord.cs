@@ -1,13 +1,7 @@
-// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
-
-using System;
-using System.ComponentModel;
-using System.Reactive;
-using System.Runtime.Serialization;
-using System.Threading;
 
 namespace ReactiveUI;
 
@@ -71,22 +65,39 @@ public record ReactiveRecord : IReactiveNotifyPropertyChanged<IReactiveObject>, 
         remove => PropertyChangedHandler -= value;
     }
 
+    [SuppressMessage("Roslynator", "RCS1159:Use EventHandler<T>", Justification = "Long term design.")]
     private event PropertyChangingEventHandler? PropertyChangingHandler;
 
+    [SuppressMessage("Roslynator", "RCS1159:Use EventHandler<T>", Justification = "Long term design.")]
     private event PropertyChangedEventHandler? PropertyChangedHandler;
 
     /// <inheritdoc />
     [IgnoreDataMember]
+    [JsonIgnore]
+#if !MONO
+    [Browsable(false)]
+    [Display(Order = -1, AutoGenerateField = false, AutoGenerateFilter = false)]
+#endif
     public IObservable<IReactivePropertyChangedEventArgs<IReactiveObject>> Changing => // TODO: Create Test
         _changing.Value;
 
     /// <inheritdoc />
     [IgnoreDataMember]
+    [JsonIgnore]
+#if !MONO
+    [Browsable(false)]
+    [Display(Order = -1, AutoGenerateField = false, AutoGenerateFilter = false)]
+#endif
     public IObservable<IReactivePropertyChangedEventArgs<IReactiveObject>> Changed => // TODO: Create Test
         _changed.Value;
 
     /// <inheritdoc/>
     [IgnoreDataMember]
+    [JsonIgnore]
+#if !MONO
+    [Browsable(false)]
+    [Display(Order = -1, AutoGenerateField = false, AutoGenerateFilter = false)]
+#endif
     public IObservable<Exception> ThrownExceptions => _thrownExceptions.Value;
 
     /// <inheritdoc/>

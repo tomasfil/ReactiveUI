@@ -1,14 +1,8 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using System.Windows.Input;
@@ -21,11 +15,11 @@ namespace ReactiveUI.Winforms;
 public class CreatesWinformsCommandBinding : ICreatesCommandBinding
 {
     // NB: These are in priority order
-    private static readonly List<(string name, Type type)> _defaultEventsToBind = new()
-    {
+    private static readonly List<(string name, Type type)> _defaultEventsToBind =
+    [
         ("Click", typeof(EventArgs)),
         ("MouseUp", typeof(System.Windows.Forms.MouseEventArgs)),
-    };
+    ];
 
     /// <inheritdoc/>
     public int GetAffinityForObject(Type type, bool hasEventTarget)
@@ -52,10 +46,20 @@ public class CreatesWinformsCommandBinding : ICreatesCommandBinding
     /// <inheritdoc/>
     public IDisposable? BindCommandToObject(ICommand? command, object? target, IObservable<object?> commandParameter)
     {
+#if NET6_0_OR_GREATER
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(target);
+#else
+        if (command is null)
+        {
+            throw new ArgumentNullException(nameof(command));
+        }
+
         if (target is null)
         {
             throw new ArgumentNullException(nameof(target));
         }
+#endif
 
         const BindingFlags bf = BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy;
 
@@ -72,12 +76,16 @@ public class CreatesWinformsCommandBinding : ICreatesCommandBinding
         var mi = GetType().GetMethods().First(x => x.Name == "BindCommandToObject" && x.IsGenericMethod);
         mi = mi.MakeGenericMethod(eventInfo.Args);
 
-        return (IDisposable?)mi.Invoke(this, new[] { command, target, commandParameter, eventInfo.EventInfo?.Name });
+        return (IDisposable?)mi.Invoke(this, [command, target, commandParameter, eventInfo.EventInfo?.Name]);
     }
 
     /// <inheritdoc/>
     public IDisposable? BindCommandToObject<TEventArgs>(ICommand? command, object? target, IObservable<object?> commandParameter, string eventName)
     {
+#if NET6_0_OR_GREATER
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(target);
+#else
         if (command is null)
         {
             throw new ArgumentNullException(nameof(command));
@@ -87,6 +95,7 @@ public class CreatesWinformsCommandBinding : ICreatesCommandBinding
         {
             throw new ArgumentNullException(nameof(target));
         }
+#endif
 
         var ret = new CompositeDisposable();
 

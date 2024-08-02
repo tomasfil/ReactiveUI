@@ -1,16 +1,7 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
-
-using System;
-using System.Diagnostics.Contracts;
-using System.Reactive.Concurrency;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Threading;
-using Splat;
 
 namespace ReactiveUI;
 
@@ -28,7 +19,7 @@ public sealed class ObservableAsPropertyHelper<T> : IHandleObservableErrors, IDi
     private readonly ISubject<T?> _subject;
     private readonly Func<T?> _getInitialValue;
     private T? _lastValue;
-    private CompositeDisposable _disposable = new();
+    private CompositeDisposable _disposable = [];
     private int _activated;
 
     /// <summary>
@@ -137,15 +128,8 @@ public sealed class ObservableAsPropertyHelper<T> : IHandleObservableErrors, IDi
         bool deferSubscription = false,
         IScheduler? scheduler = null)
     {
-        if (observable is null)
-        {
-            throw new ArgumentNullException(nameof(observable));
-        }
-
-        if (onChanged is null)
-        {
-            throw new ArgumentNullException(nameof(onChanged));
-        }
+        observable.ArgumentNullExceptionThrowIfNull(nameof(observable));
+        onChanged.ArgumentNullExceptionThrowIfNull(nameof(onChanged));
 
         scheduler ??= CurrentThreadScheduler.Instance;
         onChanging ??= _ => { };
@@ -163,18 +147,23 @@ public sealed class ObservableAsPropertyHelper<T> : IHandleObservableErrors, IDi
                            ex => _thrownExceptions.Value.OnNext(ex))
                 .DisposeWith(_disposable);
 
-        _getInitialValue = getInitialValue!;
+        _getInitialValue = getInitialValue ??= () => default;
 
         if (deferSubscription)
         {
-            _lastValue = default;
-            Source = observable.DistinctUntilChanged();
+            // Although there are no subscribers yet, we should skip all the values that are equal getInitialValue() instead of equal default(T?) because
+            // default(T?) is never accessible anyway when subscriptions are deferred. We're going to assume that the current value is getInitialValue() even
+            // if it hasn't been evaluated yet
+            Source = observable.SkipWhile(x => EqualityComparer<T?>.Default.Equals(x, getInitialValue() /* Don't use field to avoid capturing this */))
+                               .DistinctUntilChanged();
         }
         else
         {
             _lastValue = _getInitialValue();
-            Source = observable.StartWith(_lastValue).DistinctUntilChanged();
-            Source.Subscribe(_subject).DisposeWith(_disposable);
+            Source = observable.StartWith(_lastValue)
+                               .DistinctUntilChanged();
+            Source.Subscribe(_subject)
+                  .DisposeWith(_disposable);
             _activated = 1;
         }
     }
@@ -193,7 +182,7 @@ public sealed class ObservableAsPropertyHelper<T> : IHandleObservableErrors, IDi
                 if (localReferenceInCaseDisposeIsCalled is not null)
                 {
                     _lastValue = _getInitialValue();
-                    Source.StartWith(_lastValue).Subscribe(_subject).DisposeWith(localReferenceInCaseDisposeIsCalled);
+                    Source.Subscribe(_subject).DisposeWith(localReferenceInCaseDisposeIsCalled);
                 }
             }
 
@@ -220,7 +209,7 @@ public sealed class ObservableAsPropertyHelper<T> : IHandleObservableErrors, IDi
     /// <summary>
     /// Constructs a "default" ObservableAsPropertyHelper object. This is
     /// useful for when you will initialize the OAPH later, but don't want
-    /// bindings to access a null OAPH at startup.
+    /// bindings to access a null OAPH at start up.
     /// </summary>
     /// <param name="initialValue">
     /// The initial (and only) value of the property.

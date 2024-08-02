@@ -1,4 +1,4 @@
-﻿[assembly: System.Runtime.Versioning.TargetFramework(".NETCoreApp,Version=v6.0", FrameworkDisplayName="")]
+﻿[assembly: System.Runtime.Versioning.TargetFramework(".NETCoreApp,Version=v6.0", FrameworkDisplayName=".NET 6.0")]
 namespace ReactiveUI.Testing
 {
     public interface IBuilder { }
@@ -42,5 +42,14 @@ namespace ReactiveUI.Testing
         public static System.Threading.Tasks.Task<TRet> WithAsync<T, TRet>(this T scheduler, System.Func<T, System.Threading.Tasks.Task<TRet>> block)
             where T : System.Reactive.Concurrency.IScheduler { }
         public static System.IDisposable WithScheduler(System.Reactive.Concurrency.IScheduler scheduler) { }
+    }
+    public class TestSequencer : System.IDisposable
+    {
+        public TestSequencer() { }
+        public long CompletedPhases { get; }
+        public long CurrentPhase { get; }
+        public System.Threading.Tasks.Task AdvancePhaseAsync(string comment = "") { }
+        public void Dispose() { }
+        protected virtual void Dispose(bool disposing) { }
     }
 }

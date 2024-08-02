@@ -1,10 +1,8 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Reactive.Linq;
 using DynamicData;
 
 namespace ReactiveUI;
@@ -21,10 +19,7 @@ public static class ChangeSetMixin
     /// <returns>If the change set is caused by the count being changed.</returns>
     public static bool HasCountChanged(this IChangeSet changeSet) // TODO: Create Test
     {
-        if (changeSet is null)
-        {
-            throw new ArgumentNullException(nameof(changeSet));
-        }
+        changeSet.ArgumentNullExceptionThrowIfNull(nameof(changeSet));
 
         return changeSet.Adds > 0 || changeSet.Removes > 0;
     }
@@ -42,5 +37,7 @@ public static class ChangeSetMixin
     /// <typeparam name="T">The change set type.</typeparam>
     /// <param name="changeSet">The change list to evaluate.</param>
     /// <returns>An observable of changes that only have count changes.</returns>
-    public static IObservable<IChangeSet<T>> CountChanged<T>(this IObservable<IChangeSet<T>> changeSet) => changeSet.Where(x => x.HasCountChanged()); // TODO: Create Test
+    public static IObservable<IChangeSet<T>> CountChanged<T>(this IObservable<IChangeSet<T>> changeSet)
+        where T : notnull =>
+        changeSet.Where(x => x.HasCountChanged()); // TODO: Create Test
 }

@@ -1,29 +1,24 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System.Linq;
-using Splat;
-using Xunit;
+namespace ReactiveUI.Tests.Xaml;
 
-namespace ReactiveUI.Tests.Xaml
+/// <summary>
+/// Checks RxApp dependency objects.
+/// </summary>
+public class RxAppDependencyObjectTests
 {
     /// <summary>
-    /// Checks RxApp dependency objects.
+    /// Tests that Dependency Property notifiers should be found.
     /// </summary>
-    public class RxAppDependencyObjectTests
+    [Fact]
+    public void DepPropNotifierShouldBeFound()
     {
-        /// <summary>
-        /// Tests that Dependency Property notifiers should be found.
-        /// </summary>
-        [Fact]
-        public void DepPropNotifierShouldBeFound()
-        {
-            RxApp.EnsureInitialized();
+        RxApp.EnsureInitialized();
 
-            Assert.True(Locator.Current.GetServices<ICreatesObservableForProperty>()
-                               .Any(x => x is DependencyObjectObservableForProperty));
-        }
+        Assert.True(Locator.Current.GetServices<ICreatesObservableForProperty>()
+                           .Any(x => x is DependencyObjectObservableForProperty));
     }
 }

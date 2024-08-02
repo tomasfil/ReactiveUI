@@ -1,13 +1,7 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
 
 namespace ReactiveUI;
 
@@ -53,18 +47,10 @@ public class CombinedReactiveCommand<TParam, TResult> : ReactiveCommandBase<TPar
     /// <exception cref="ArgumentException">Fires if the child commands container is empty.</exception>
     protected internal CombinedReactiveCommand(
         IEnumerable<ReactiveCommandBase<TParam, TResult>> childCommands,
-        IObservable<bool> canExecute,
+        IObservable<bool>? canExecute,
         IScheduler? outputScheduler = null)
     {
-        if (childCommands is null)
-        {
-            throw new ArgumentNullException(nameof(childCommands));
-        }
-
-        if (canExecute is null)
-        {
-            throw new ArgumentNullException(nameof(canExecute));
-        }
+        childCommands.ArgumentNullExceptionThrowIfNull(nameof(childCommands));
 
         _outputScheduler = outputScheduler ?? RxApp.MainThreadScheduler;
 
@@ -80,7 +66,7 @@ public class CombinedReactiveCommand<TParam, TResult> : ReactiveCommandBase<TPar
         var canChildrenExecute = childCommandsArray.Select(x => x.CanExecute)
                                                    .CombineLatest()
                                                    .Select(x => x.All(y => y));
-        var combinedCanExecute = canExecute
+        var combinedCanExecute = (canExecute ?? Observables.True)
                                  .Catch<bool, Exception>(ex =>
                                  {
                                      _exceptions.OnNext(ex);

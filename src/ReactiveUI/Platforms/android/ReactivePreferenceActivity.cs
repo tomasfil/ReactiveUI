@@ -1,16 +1,10 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Reactive.Threading.Tasks;
-using System.Threading.Tasks;
+using System.Runtime.Versioning;
+
 using Android.App;
 using Android.Content;
 using Android.Preferences;
@@ -22,51 +16,6 @@ namespace ReactiveUI;
 /// This is an Activity that is both an Activity and has ReactiveObject powers
 /// (i.e. you can call RaiseAndSetIfChanged).
 /// </summary>
-/// <typeparam name="TViewModel">The view model type.</typeparam>
-[SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleType", Justification = "Classes with the same class names within.")]
-[Obsolete("This class is obsoleted in this android platform")]
-public class ReactivePreferenceActivity<TViewModel> : ReactivePreferenceActivity, IViewFor<TViewModel>, ICanActivate
-    where TViewModel : class
-{
-    private TViewModel? _viewModel;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ReactivePreferenceActivity{TViewModel}"/> class.
-    /// </summary>
-    protected ReactivePreferenceActivity()
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ReactivePreferenceActivity{TViewModel}"/> class.
-    /// </summary>
-    /// <param name="handle">The handle.</param>
-    /// <param name="ownership">The ownership.</param>
-    protected ReactivePreferenceActivity(IntPtr handle, JniHandleOwnership ownership)
-        : base(handle, ownership)
-    {
-    }
-
-    /// <inheritdoc/>
-    public TViewModel? ViewModel
-    {
-        get => _viewModel;
-        set => this.RaiseAndSetIfChanged(ref _viewModel, value);
-    }
-
-    /// <inheritdoc/>
-    object? IViewFor.ViewModel
-    {
-        get => _viewModel;
-        set => _viewModel = (TViewModel?)value!;
-    }
-}
-
-/// <summary>
-/// This is an Activity that is both an Activity and has ReactiveObject powers
-/// (i.e. you can call RaiseAndSetIfChanged).
-/// </summary>
-[Obsolete("This class is obsoleted in this android platform")]
 public class ReactivePreferenceActivity : PreferenceActivity, IReactiveObject, IReactiveNotifyPropertyChanged<ReactivePreferenceActivity>, IHandleObservableErrors
 {
     private readonly Subject<Unit> _activated = new();
@@ -85,7 +34,8 @@ public class ReactivePreferenceActivity : PreferenceActivity, IReactiveObject, I
     /// </summary>
     /// <param name="handle">The pointer.</param>
     /// <param name="ownership">The ownership.</param>
-    protected ReactivePreferenceActivity(IntPtr handle, JniHandleOwnership ownership)
+    [ObsoletedOSPlatform("android28.0")]
+    protected ReactivePreferenceActivity(in IntPtr handle, JniHandleOwnership ownership)
         : base(handle, ownership)
     {
     }

@@ -1,15 +1,9 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using Splat;
 
 namespace ReactiveUI;
 
@@ -28,9 +22,9 @@ namespace ReactiveUI;
 /// </summary>
 public class MessageBus : IMessageBus
 {
-    private readonly Dictionary<(Type type, string? contract), NotAWeakReference> _messageBus = new();
+    private readonly Dictionary<(Type type, string? contract), NotAWeakReference> _messageBus = [];
 
-    private readonly Dictionary<(Type type, string? contract), IScheduler> _schedulerMappings = new();
+    private readonly Dictionary<(Type type, string? contract), IScheduler> _schedulerMappings = [];
 
     /// <summary>
     /// Gets or sets the Current MessageBus.
@@ -116,10 +110,7 @@ public class MessageBus : IMessageBus
         IObservable<T> source,
         string? contract = null)
     {
-        if (source is null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
+        source.ArgumentNullExceptionThrowIfNull(nameof(source));
 
         return source.Subscribe(SetupSubjectIfNecessary<T>(contract));
     }
@@ -165,7 +156,7 @@ public class MessageBus : IMessageBus
         {
             var item = (type, contract);
             block(_messageBus, item);
-            if (_messageBus.ContainsKey(item) && !_messageBus[item].IsAlive)
+            if (_messageBus.TryGetValue(item, out var value) && !value.IsAlive)
             {
                 _messageBus.Remove(item);
             }

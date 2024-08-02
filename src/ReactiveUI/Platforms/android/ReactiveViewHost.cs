@@ -1,14 +1,9 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
 using Android.Content;
 using Android.Views;
 
@@ -28,6 +23,7 @@ public abstract class ReactiveViewHost<TViewModel> : LayoutViewHost, IViewFor<TV
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401: Field should be private", Justification = "Legacy reasons")]
     [SuppressMessage("Design", "CA1051: Do not declare visible instance fields", Justification = "Legacy reasons")]
     [IgnoreDataMember]
+    [JsonIgnore]
     protected Lazy<PropertyInfo[]>? allPublicProperties;
 
     private TViewModel? _viewModel;
@@ -39,7 +35,7 @@ public abstract class ReactiveViewHost<TViewModel> : LayoutViewHost, IViewFor<TV
     /// <param name="layoutId">The layout identifier.</param>
     /// <param name="parent">The parent.</param>
     /// <param name="attachToRoot">if set to <c>true</c> [attach to root].</param>
-    /// <param name="performAutoWireup">if set to <c>true</c> [perform automatic wireup].</param>
+    /// <param name="performAutoWireup">if set to <c>true</c> [perform automatic wire-up].</param>
     protected ReactiveViewHost(Context ctx, int layoutId, ViewGroup parent, bool attachToRoot = false, bool performAutoWireup = true)
         : base(ctx, layoutId, parent, attachToRoot, performAutoWireup) =>
         SetupRxObj();
@@ -71,16 +67,19 @@ public abstract class ReactiveViewHost<TViewModel> : LayoutViewHost, IViewFor<TV
 
     /// <inheritdoc />
     [IgnoreDataMember]
+    [JsonIgnore]
     public IObservable<IReactivePropertyChangedEventArgs<ReactiveViewHost<TViewModel>>> Changing => this.GetChangingObservable();
 
     /// <inheritdoc />
     [IgnoreDataMember]
+    [JsonIgnore]
     public IObservable<IReactivePropertyChangedEventArgs<ReactiveViewHost<TViewModel>>> Changed => this.GetChangedObservable();
 
     /// <summary>
     /// Gets the thrown exceptions.
     /// </summary>
     [IgnoreDataMember]
+    [JsonIgnore]
     public IObservable<Exception> ThrownExceptions => this.GetThrownExceptionsObservable();
 
     /// <summary>
@@ -105,9 +104,9 @@ public abstract class ReactiveViewHost<TViewModel> : LayoutViewHost, IViewFor<TV
     void IReactiveObject.RaisePropertyChanged(PropertyChangedEventArgs args) => PropertyChanged?.Invoke(this, args);
 
     [OnDeserialized]
-    private void SetupRxObj(StreamingContext sc) => SetupRxObj();
+    private void SetupRxObj(in StreamingContext sc) => SetupRxObj();
 
     private void SetupRxObj() =>
         allPublicProperties = new Lazy<PropertyInfo[]>(() =>
-                                                           GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).ToArray());
+                                                           [.. GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)]);
 }

@@ -1,11 +1,8 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Linq;
-using System.Reactive.Disposables;
 using System.Reflection;
 using System.Windows.Input;
 
@@ -40,12 +37,9 @@ public class CreatesCommandBindingViaCommandParameter : ICreatesCommandBinding
     /// <inheritdoc/>
     public IDisposable? BindCommandToObject(ICommand? command, object? target, IObservable<object?> commandParameter)
     {
-        if (target is null)
-        {
-            throw new ArgumentNullException(nameof(target));
-        }
+        target.ArgumentNullExceptionThrowIfNull(nameof(target));
 
-        var type = target.GetType();
+        var type = target!.GetType();
         var cmdPi = type.GetRuntimeProperty("Command");
         var cmdParamPi = type.GetRuntimeProperty("CommandParameter");
         var ret = new CompositeDisposable();

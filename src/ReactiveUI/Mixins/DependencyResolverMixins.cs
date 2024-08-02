@@ -1,15 +1,9 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
-using Splat;
 
 namespace ReactiveUI;
 
@@ -28,15 +22,8 @@ public static class DependencyResolverMixins
     /// <param name="registrationNamespaces">Which platforms to use.</param>
     public static void InitializeReactiveUI(this IMutableDependencyResolver resolver, params RegistrationNamespace[] registrationNamespaces)
     {
-        if (resolver is null)
-        {
-            throw new ArgumentNullException(nameof(resolver));
-        }
-
-        if (registrationNamespaces is null)
-        {
-            throw new ArgumentNullException(nameof(registrationNamespaces));
-        }
+        resolver.ArgumentNullExceptionThrowIfNull(nameof(resolver));
+        registrationNamespaces.ArgumentNullExceptionThrowIfNull(nameof(registrationNamespaces));
 
         var possibleNamespaces = new Dictionary<RegistrationNamespace, string>
         {
@@ -86,15 +73,8 @@ public static class DependencyResolverMixins
     /// <param name="assembly">The assembly to search using reflection for IViewFor classes.</param>
     public static void RegisterViewsForViewModels(this IMutableDependencyResolver resolver, Assembly assembly)
     {
-        if (resolver is null)
-        {
-            throw new ArgumentNullException(nameof(resolver));
-        }
-
-        if (assembly is null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
+        resolver.ArgumentNullExceptionThrowIfNull(nameof(resolver));
+        assembly.ArgumentNullExceptionThrowIfNull(nameof(assembly));
 
         // for each type that implements IViewFor
         foreach (var ti in assembly.DefinedTypes
@@ -131,12 +111,9 @@ public static class DependencyResolverMixins
     private static Func<object> TypeFactory(TypeInfo typeInfo)
     {
         var parameterlessConstructor = typeInfo.DeclaredConstructors.FirstOrDefault(ci => ci.IsPublic && ci.GetParameters().Length == 0);
-        if (parameterlessConstructor is null)
-        {
-            throw new Exception($"Failed to register type {typeInfo.FullName} because it's missing a parameterless constructor.");
-        }
-
-        return Expression.Lambda<Func<object>>(Expression.New(parameterlessConstructor)).Compile();
+        return parameterlessConstructor is null
+            ? throw new Exception($"Failed to register type {typeInfo.FullName} because it's missing a parameterless constructor.")
+            : Expression.Lambda<Func<object>>(Expression.New(parameterlessConstructor)).Compile();
     }
 
     private static void ProcessRegistrationForNamespace(string namespaceName, AssemblyName assemblyName, IMutableDependencyResolver resolver)

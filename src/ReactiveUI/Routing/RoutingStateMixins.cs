@@ -1,9 +1,7 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
-
-using System.Linq;
 
 namespace ReactiveUI;
 
@@ -21,10 +19,7 @@ public static class RoutingStateMixins
     public static T? FindViewModelInStack<T>(this RoutingState item)
         where T : IRoutableViewModel
     {
-        if (item is null)
-        {
-            throw new System.ArgumentNullException(nameof(item));
-        }
+        item.ArgumentNullExceptionThrowIfNull(nameof(item));
 
         return item.NavigationStack.Reverse().OfType<T>().FirstOrDefault();
     }
@@ -36,10 +31,7 @@ public static class RoutingStateMixins
     /// <returns>The matching ViewModel or null if none exists.</returns>
     public static IRoutableViewModel? GetCurrentViewModel(this RoutingState item)
     {
-        if (item is null)
-        {
-            throw new System.ArgumentNullException(nameof(item));
-        }
+        item.ArgumentNullExceptionThrowIfNull(nameof(item));
 
         return item.NavigationStack.LastOrDefault();
     }

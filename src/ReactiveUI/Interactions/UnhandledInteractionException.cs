@@ -1,10 +1,7 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
-
-using System;
-using System.Runtime.Serialization;
 
 namespace ReactiveUI;
 
@@ -17,7 +14,9 @@ namespace ReactiveUI;
 /// <typeparam name="TOutput">
 /// The type of the interaction's output.
 /// </typeparam>
+#if !NET8_0_OR_GREATER
 [Serializable]
+#endif
 public class UnhandledInteractionException<TInput, TOutput> : Exception
 {
     [field: NonSerialized]
@@ -61,14 +60,20 @@ public class UnhandledInteractionException<TInput, TOutput> : Exception
     {
     }
 
+#if !NET8_0_OR_GREATER
     /// <summary>
     /// Initializes a new instance of the <see cref="UnhandledInteractionException{TInput, TOutput}"/> class.
     /// </summary>
     /// <param name="info">The serialization information.</param>
     /// <param name="context">The serialization context.</param>
+#if NET6_0_OR_GREATER || MONOANDROID13_0
+    protected UnhandledInteractionException(SerializationInfo info, in StreamingContext context)
+#else
     protected UnhandledInteractionException(SerializationInfo info, StreamingContext context)
+#endif
         : base(info, context) =>
         Input = (TInput)info.GetValue(nameof(Input), typeof(TInput))!;
+#endif
 
     /// <summary>
     /// Gets the interaction that was not handled.
@@ -80,15 +85,14 @@ public class UnhandledInteractionException<TInput, TOutput> : Exception
     /// </summary>
     public TInput Input { get; } = default!;
 
+#if !NET8_0_OR_GREATER
     /// <inheritdoc/>
     public override void GetObjectData(SerializationInfo info, StreamingContext context)
     {
-        if (info is null)
-        {
-            throw new ArgumentNullException(nameof(info));
-        }
+        info.ArgumentNullExceptionThrowIfNull(nameof(info));
 
         info.AddValue(nameof(Input), Input);
         base.GetObjectData(info, context);
     }
+#endif
 }

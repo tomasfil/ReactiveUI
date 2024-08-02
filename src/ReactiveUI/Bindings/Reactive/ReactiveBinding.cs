@@ -1,49 +1,33 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Linq.Expressions;
-
 namespace ReactiveUI;
 
-internal class ReactiveBinding<TView, TValue> : IReactiveBinding<TView, TValue>
+internal class ReactiveBinding<TView, TValue>(
+    TView view,
+    Expression viewExpression,
+    Expression viewModelExpression,
+    IObservable<TValue?> changed,
+    BindingDirection direction,
+    IDisposable bindingDisposable) : IReactiveBinding<TView, TValue>
     where TView : IViewFor
 {
-    private readonly IDisposable _bindingDisposable;
-
-    public ReactiveBinding(
-        TView view,
-        Expression viewExpression,
-        Expression viewModelExpression,
-        IObservable<TValue?> changed,
-        BindingDirection direction,
-        IDisposable bindingDisposable)
-    {
-        View = view;
-        ViewExpression = viewExpression;
-        ViewModelExpression = viewModelExpression;
-        Direction = direction;
-        Changed = changed;
-
-        _bindingDisposable = bindingDisposable;
-    }
+    /// <inheritdoc />
+    public Expression ViewModelExpression { get; } = viewModelExpression;
 
     /// <inheritdoc />
-    public Expression ViewModelExpression { get; }
+    public TView View { get; } = view;
 
     /// <inheritdoc />
-    public TView View { get; }
+    public Expression ViewExpression { get; } = viewExpression;
 
     /// <inheritdoc />
-    public Expression ViewExpression { get; }
+    public IObservable<TValue?> Changed { get; } = changed;
 
     /// <inheritdoc />
-    public IObservable<TValue?> Changed { get; }
-
-    /// <inheritdoc />
-    public BindingDirection Direction { get; }
+    public BindingDirection Direction { get; } = direction;
 
     /// <inheritdoc />
     public void Dispose()
@@ -60,7 +44,7 @@ internal class ReactiveBinding<TView, TValue> : IReactiveBinding<TView, TValue>
     {
         if (isDisposing)
         {
-            _bindingDisposable.Dispose();
+            bindingDisposable.Dispose();
         }
     }
 }

@@ -1,9 +1,7 @@
-// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
-
-using System.Collections.Generic;
 
 namespace ReactiveUI.Testing;
 #pragma warning disable SA1402, SA1649, CA1040
@@ -52,7 +50,7 @@ public static class IBuilderExtensions
     {
         if (field is null)
         {
-            throw new System.ArgumentNullException(nameof(field));
+            throw new ArgumentNullException(nameof(field));
         }
 
         field.AddRange(values);
@@ -74,7 +72,7 @@ public static class IBuilderExtensions
     {
         if (field is null)
         {
-            throw new System.ArgumentNullException(nameof(field));
+            throw new ArgumentNullException(nameof(field));
         }
 
         field.Add(value);
@@ -100,7 +98,7 @@ public static class IBuilderExtensions
     {
         if (dictionary is null)
         {
-            throw new System.ArgumentNullException(nameof(dictionary));
+            throw new ArgumentNullException(nameof(dictionary));
         }
 
         dictionary.Add(keyValuePair.Key, keyValuePair.Value);
@@ -128,7 +126,7 @@ public static class IBuilderExtensions
     {
         if (dictionary is null)
         {
-            throw new System.ArgumentNullException(nameof(dictionary));
+            throw new ArgumentNullException(nameof(dictionary));
         }
 
         dictionary.Add(key, value);
@@ -153,7 +151,7 @@ public static class IBuilderExtensions
     {
         if (dictionary is null)
         {
-            throw new System.ArgumentNullException(nameof(dictionary));
+            throw new ArgumentNullException(nameof(dictionary));
         }
 
         dictionary = (Dictionary<TKey, TField>)keyValuePair;

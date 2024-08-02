@@ -1,11 +1,7 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
-
-using System;
-using System.Linq.Expressions;
-using System.Reactive.Linq;
 
 namespace ReactiveUI;
 
@@ -32,10 +28,7 @@ public static class ObservableFuncMixins
         bool beforeChange = false,
         bool skipInitial = false) // TODO: Create Test
     {
-        if (expression is null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        expression.ArgumentNullExceptionThrowIfNull(nameof(expression));
 
         var sParam = Reflection.Rewrite(expression.Body);
         return source.SubscribeToExpressionChain<TSource, TResult?>(sParam, beforeChange, skipInitial, RxApp.SuppressViewCommandBindingMessage)

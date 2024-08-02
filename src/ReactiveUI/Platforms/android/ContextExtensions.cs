@@ -1,12 +1,11 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Reactive.Linq;
 using Android.Content;
 using Android.OS;
+using Context = Android.Content.Context;
 
 namespace ReactiveUI;
 
@@ -57,21 +56,17 @@ public static class ContextExtensions
     /// A private implementation of IServiceConnection and IDisposable.
     /// </summary>
     /// <typeparam name="TBinder">The binder type.</typeparam>
-    private class ServiceConnection<TBinder> : Java.Lang.Object, IServiceConnection
+    private class ServiceConnection<TBinder>(Context context, IObserver<TBinder?> observer) : Java.Lang.Object, IServiceConnection
         where TBinder : class, IBinder
     {
-        private readonly Context _context;
-        private readonly IObserver<TBinder?> _observer;
+        private readonly Context _context = context;
+        private readonly IObserver<TBinder?> _observer = observer;
 
         private bool _disposed;
 
-        public ServiceConnection(Context context, IObserver<TBinder?> observer)
-        {
-            _context = context;
-            _observer = observer;
-        }
-
+#pragma warning disable RCS1168 // Parameter name differs from base name.
         void IServiceConnection.OnServiceConnected(ComponentName? name, IBinder? binder) => _observer.OnNext((TBinder?)binder);
+#pragma warning restore RCS1168 // Parameter name differs from base name.
 
         void IServiceConnection.OnServiceDisconnected(ComponentName? name) =>
 
@@ -80,14 +75,11 @@ public static class ContextExtensions
 
         protected override void Dispose(bool disposing)
         {
-            if (!_disposed)
+            if (!_disposed && disposing)
             {
-                if (disposing)
-                {
-                    _context.UnbindService(this);
-
-                    _disposed = true;
-                }
+                _context.UnbindService(this);
+                _context.Dispose();
+                _disposed = true;
             }
 
             base.Dispose(disposing);

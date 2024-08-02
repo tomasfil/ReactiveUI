@@ -1,20 +1,9 @@
-// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-
-using Splat;
 
 namespace ReactiveUI;
 
@@ -59,6 +48,8 @@ public class PropertyBinderImplementation : IPropertyBinderImplementation
         where TViewModel : class
         where TView : class, IViewFor
     {
+        vmProperty.ArgumentNullExceptionThrowIfNull(nameof(vmProperty));
+        viewProperty.ArgumentNullExceptionThrowIfNull(nameof(viewProperty));
         var vmToViewConverter = vmToViewConverterOverride ?? GetConverterForTypes(typeof(TVMProp), typeof(TVProp));
         var viewToVMConverter = viewToVMConverterOverride ?? GetConverterForTypes(typeof(TVProp), typeof(TVMProp));
 
@@ -100,25 +91,10 @@ public class PropertyBinderImplementation : IPropertyBinderImplementation
         where TViewModel : class
         where TView : class, IViewFor
     {
-        if (vmProperty is null)
-        {
-            throw new ArgumentNullException(nameof(vmProperty));
-        }
-
-        if (viewProperty is null)
-        {
-            throw new ArgumentNullException(nameof(viewProperty));
-        }
-
-        if (vmToViewConverter is null)
-        {
-            throw new ArgumentNullException(nameof(vmToViewConverter));
-        }
-
-        if (viewToVmConverter is null)
-        {
-            throw new ArgumentNullException(nameof(viewToVmConverter));
-        }
+        vmProperty.ArgumentNullExceptionThrowIfNull(nameof(vmProperty));
+        viewProperty.ArgumentNullExceptionThrowIfNull(nameof(viewProperty));
+        vmToViewConverter.ArgumentNullExceptionThrowIfNull(nameof(vmToViewConverter));
+        viewToVmConverter.ArgumentNullExceptionThrowIfNull(nameof(viewToVmConverter));
 
         bool VmToViewFunc(TVMProp? vmValue, out TVProp vValue)
         {
@@ -146,26 +122,13 @@ public class PropertyBinderImplementation : IPropertyBinderImplementation
         where TViewModel : class
         where TView : class, IViewFor
     {
-        if (vmProperty is null)
-        {
-            throw new ArgumentNullException(nameof(vmProperty));
-        }
-
-        if (viewProperty is null)
-        {
-            throw new ArgumentNullException(nameof(viewProperty));
-        }
+        vmProperty.ArgumentNullExceptionThrowIfNull(nameof(vmProperty));
+        viewProperty.ArgumentNullExceptionThrowIfNull(nameof(viewProperty));
 
         var vmExpression = Reflection.Rewrite(vmProperty.Body);
         var viewExpression = Reflection.Rewrite(viewProperty.Body);
         var viewType = viewExpression.Type;
-        var converter = vmToViewConverterOverride ?? GetConverterForTypes(typeof(TVMProp?), viewType);
-
-        if (converter is null)
-        {
-            throw new ArgumentException($"Can't convert {typeof(TVMProp)} to {viewType}. To fix this, register a IBindingTypeConverter");
-        }
-
+        var converter = (vmToViewConverterOverride ?? GetConverterForTypes(typeof(TVMProp?), viewType)) ?? throw new ArgumentException($"Can't convert {typeof(TVMProp)} to {viewType}. To fix this, register a IBindingTypeConverter");
         var ret = EvalBindingHooks(viewModel, view, vmExpression, viewExpression, BindingDirection.OneWay);
         if (!ret)
         {
@@ -190,15 +153,8 @@ public class PropertyBinderImplementation : IPropertyBinderImplementation
         where TViewModel : class
         where TView : class, IViewFor
     {
-        if (vmProperty is null)
-        {
-            throw new ArgumentNullException(nameof(vmProperty));
-        }
-
-        if (viewProperty is null)
-        {
-            throw new ArgumentNullException(nameof(viewProperty));
-        }
+        vmProperty.ArgumentNullExceptionThrowIfNull(nameof(vmProperty));
+        viewProperty.ArgumentNullExceptionThrowIfNull(nameof(viewProperty));
 
         var vmExpression = Reflection.Rewrite(vmProperty.Body);
         var viewExpression = Reflection.Rewrite(viewProperty.Body);
@@ -224,15 +180,8 @@ public class PropertyBinderImplementation : IPropertyBinderImplementation
         IBindingTypeConverter? vmToViewConverterOverride = null)
         where TTarget : class
     {
-        if (target is null)
-        {
-            throw new ArgumentNullException(nameof(target));
-        }
-
-        if (propertyExpression is null)
-        {
-            throw new ArgumentNullException(nameof(propertyExpression));
-        }
+        target.ArgumentNullExceptionThrowIfNull(nameof(target));
+        propertyExpression.ArgumentNullExceptionThrowIfNull(nameof(propertyExpression));
 
         var viewExpression = Reflection.Rewrite(propertyExpression.Body);
 
@@ -242,16 +191,10 @@ public class PropertyBinderImplementation : IPropertyBinderImplementation
             return Disposable.Empty;
         }
 
-        var converter = vmToViewConverterOverride ?? GetConverterForTypes(typeof(TValue), typeof(TTValue?));
-
-        if (converter is null)
-        {
-            throw new ArgumentException($"Can't convert {typeof(TValue)} to {typeof(TTValue)}. To fix this, register a IBindingTypeConverter");
-        }
-
+        var converter = (vmToViewConverterOverride ?? GetConverterForTypes(typeof(TValue), typeof(TTValue?))) ?? throw new ArgumentException($"Can't convert {typeof(TValue)} to {typeof(TTValue)}. To fix this, register a IBindingTypeConverter");
         var source = observedChange.SelectMany(x => !converter.TryConvert(x, typeof(TTValue?), conversionHint, out var tmp) ? Observable<object>.Empty : Observable.Return(tmp));
 
-        var (disposable, _) = BindToDirect<TTarget, TTValue?, object?>(source, target, viewExpression);
+        var (disposable, _) = BindToDirect<TTarget, TTValue?, object?>(source, target!, viewExpression);
 
         return disposable;
     }
@@ -267,10 +210,7 @@ public class PropertyBinderImplementation : IPropertyBinderImplementation
         }
 
         var setter = _setMethodCache.Get((fromType, targetType));
-
-#pragma warning disable IDE0031 // Use null propagation
         return setter is null ? null : setter.PerformSet;
-#pragma warning restore IDE0031 // Use null propagation
     }
 
     private (IDisposable disposable, IObservable<TValue> value) BindToDirect<TTarget, TValue, TObs>(
@@ -328,11 +268,7 @@ public class PropertyBinderImplementation : IPropertyBinderImplementation
         where TViewModel : class
     {
         var hooks = Locator.Current.GetServices<IPropertyBindingHook>();
-
-        if (view is null)
-        {
-            throw new ArgumentNullException(nameof(view));
-        }
+        view.ArgumentNullExceptionThrowIfNull(nameof(view));
 
         Func<IObservedChange<object, object?>[]> vmFetcher = vmExpression is not null
                                                                  ? (() =>
@@ -342,7 +278,7 @@ public class PropertyBinderImplementation : IPropertyBinderImplementation
                                                                        })
                                                                  : (() => new IObservedChange<object, object?>[]
                                                                        {
-                                                                           new ObservedChange<object, object?>(null!, null!, viewModel)
+                                                                           new ObservedChange<object, object?>(null!, null, viewModel)
                                                                        });
 
         var vFetcher = new Func<IObservedChange<object, object?>[]>(() =>
@@ -352,7 +288,7 @@ public class PropertyBinderImplementation : IPropertyBinderImplementation
         });
 
         var shouldBind = hooks.Aggregate(true, (acc, x) =>
-                                             acc && x.ExecuteHook(viewModel, view, vmFetcher!, vFetcher!, direction));
+                                             acc && x.ExecuteHook(viewModel, view!, vmFetcher!, vFetcher!, direction));
 
         if (!shouldBind)
         {
@@ -364,8 +300,7 @@ public class PropertyBinderImplementation : IPropertyBinderImplementation
         return shouldBind;
     }
 
-    [SuppressMessage("Roslynator", "RCS1176: Use var instead of explicit", Justification = "Required for generics")]
-    private IReactiveBinding<TView, (object? view, bool isViewModel)> BindImpl<TViewModel, TView, TVMProp, TVProp, TDontCare>(
+    private ReactiveBinding<TView, (object? view, bool isViewModel)> BindImpl<TViewModel, TView, TVMProp, TVProp, TDontCare>(
         TViewModel? viewModel,
         TView view,
         Expression<Func<TViewModel, TVMProp?>> vmProperty,
@@ -377,15 +312,9 @@ public class PropertyBinderImplementation : IPropertyBinderImplementation
         where TViewModel : class
         where TView : class, IViewFor
     {
-        if (vmProperty is null)
-        {
-            throw new ArgumentNullException(nameof(vmProperty));
-        }
+        vmProperty.ArgumentNullExceptionThrowIfNull(nameof(vmProperty));
 
-        if (viewProperty is null)
-        {
-            throw new ArgumentNullException(nameof(viewProperty));
-        }
+        viewProperty.ArgumentNullExceptionThrowIfNull(nameof(viewProperty));
 
         var signalInitialUpdate = new Subject<bool>();
         var vmExpression = Reflection.Rewrite(vmProperty.Body);

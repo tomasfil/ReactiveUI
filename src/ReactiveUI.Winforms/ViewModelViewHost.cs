@@ -1,13 +1,8 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using System.Windows.Forms;
 
 namespace ReactiveUI.Winforms;
@@ -18,7 +13,7 @@ namespace ReactiveUI.Winforms;
 [DefaultProperty("ViewModel")]
 public partial class ViewModelControlHost : UserControl, IReactiveObject, IViewFor
 {
-    private readonly CompositeDisposable _disposables = new CompositeDisposable();
+    private readonly CompositeDisposable _disposables = [];
     private Control? _defaultContent;
     private IObservable<string>? _viewContractObservable;
     private object? _viewModel;
@@ -32,11 +27,7 @@ public partial class ViewModelControlHost : UserControl, IReactiveObject, IViewF
     {
         InitializeComponent();
         _cacheViews = DefaultCacheViewsEnabled;
-
-        foreach (var subscription in SetupBindings())
-        {
-            _disposables.Add(subscription);
-        }
+        SetupBindings().ForEach(_disposables.Add);
     }
 
     /// <inheritdoc/>
@@ -121,16 +112,10 @@ public partial class ViewModelControlHost : UserControl, IReactiveObject, IViewF
     }
 
     /// <inheritdoc/>
-    void IReactiveObject.RaisePropertyChanging(PropertyChangingEventArgs args)
-    {
-        PropertyChanging?.Invoke(this, args);
-    }
+    void IReactiveObject.RaisePropertyChanging(PropertyChangingEventArgs args) => PropertyChanging?.Invoke(this, args);
 
     /// <inheritdoc/>
-    void IReactiveObject.RaisePropertyChanged(PropertyChangedEventArgs args)
-    {
-        PropertyChanged?.Invoke(this, args);
-    }
+    void IReactiveObject.RaisePropertyChanged(PropertyChangedEventArgs args) => PropertyChanged?.Invoke(this, args);
 
     /// <summary>
     /// Clean up any resources being used.

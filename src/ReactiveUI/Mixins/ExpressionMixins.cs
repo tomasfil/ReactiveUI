@@ -1,13 +1,8 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 
@@ -93,10 +88,7 @@ public static class ExpressionMixins
     /// <returns>The member info from the expression.</returns>
     public static MemberInfo? GetMemberInfo(this Expression expression)
     {
-        if (expression is null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        expression.ArgumentNullExceptionThrowIfNull(nameof(expression));
 
         MemberInfo? info;
         switch (expression.NodeType)
@@ -123,10 +115,7 @@ public static class ExpressionMixins
     /// <returns>The parent expression.</returns>
     public static Expression? GetParent(this Expression expression) // TODO: Create Test
     {
-        if (expression is null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        expression.ArgumentNullExceptionThrowIfNull(nameof(expression));
 
         return expression.NodeType switch
         {
@@ -145,10 +134,7 @@ public static class ExpressionMixins
     /// <returns>An array of arguments.</returns>
     public static object?[]? GetArgumentsArray(this Expression expression) // TODO: Create Test
     {
-        if (expression is null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        expression.ArgumentNullExceptionThrowIfNull(nameof(expression));
 
         if (expression.NodeType == ExpressionType.Index)
         {

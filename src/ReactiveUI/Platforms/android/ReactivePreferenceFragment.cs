@@ -1,14 +1,10 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
+using System.Runtime.Versioning;
+
 using Android.Preferences;
 using Android.Runtime;
 
@@ -18,51 +14,6 @@ namespace ReactiveUI;
 /// This is a PreferenceFragment that is both an Activity and has ReactiveObject powers
 /// (i.e. you can call RaiseAndSetIfChanged).
 /// </summary>
-/// <typeparam name="TViewModel">The view model type.</typeparam>
-[SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleType", Justification = "Classes with the same class names within.")]
-[Obsolete("This class was deprecated in API level 28. Use the ReactivePreferenceFragment in ReactiveUI.AndroidX (recommended) or ReactiveUI.AndroidSupport for consistent behavior across all devices and access to Lifecycle.", false)]
-public class ReactivePreferenceFragment<TViewModel> : ReactivePreferenceFragment, IViewFor<TViewModel>, ICanActivate
-    where TViewModel : class
-{
-    private TViewModel? _viewModel;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ReactivePreferenceFragment{TViewModel}"/> class.
-    /// </summary>
-    protected ReactivePreferenceFragment()
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ReactivePreferenceFragment{TViewModel}"/> class.
-    /// </summary>
-    /// <param name="handle">The handle.</param>
-    /// <param name="ownership">The ownership.</param>
-    protected ReactivePreferenceFragment(IntPtr handle, JniHandleOwnership ownership)
-        : base(handle, ownership)
-    {
-    }
-
-    /// <inheritdoc/>
-    public TViewModel? ViewModel
-    {
-        get => _viewModel;
-        set => this.RaiseAndSetIfChanged(ref _viewModel, value);
-    }
-
-    /// <inheritdoc/>
-    object? IViewFor.ViewModel
-    {
-        get => _viewModel;
-        set => _viewModel = (TViewModel?)value!;
-    }
-}
-
-/// <summary>
-/// This is a PreferenceFragment that is both an Activity and has ReactiveObject powers
-/// (i.e. you can call RaiseAndSetIfChanged).
-/// </summary>
-[Obsolete("This class was deprecated in API level 28. Use the ReactivePreferenceFragment in ReactiveUI.AndroidX (recommended) or ReactiveUI.AndroidSupport for consistent behavior across all devices and access to Lifecycle.", false)]
 public class ReactivePreferenceFragment : PreferenceFragment, IReactiveNotifyPropertyChanged<ReactivePreferenceFragment>, IReactiveObject, IHandleObservableErrors
 {
     private readonly Subject<Unit> _activated = new();
@@ -80,7 +31,8 @@ public class ReactivePreferenceFragment : PreferenceFragment, IReactiveNotifyPro
     /// </summary>
     /// <param name="handle">The handle.</param>
     /// <param name="ownership">The ownership.</param>
-    protected ReactivePreferenceFragment(IntPtr handle, JniHandleOwnership ownership)
+    [ObsoletedOSPlatform("android28.0")]
+    protected ReactivePreferenceFragment(in IntPtr handle, JniHandleOwnership ownership)
         : base(handle, ownership)
     {
     }
@@ -120,7 +72,7 @@ public class ReactivePreferenceFragment : PreferenceFragment, IReactiveNotifyPro
     void IReactiveObject.RaisePropertyChanging(PropertyChangingEventArgs args) => PropertyChanging?.Invoke(this, args); // TODO: Create Test
 
     /// <inheritdoc/>
-    [Obsolete("deprecated")]
+    [ObsoletedOSPlatform("android28.0")]
     public override void OnPause()
     {
         base.OnPause();
@@ -128,7 +80,7 @@ public class ReactivePreferenceFragment : PreferenceFragment, IReactiveNotifyPro
     }
 
     /// <inheritdoc/>
-    [Obsolete("deprecated")]
+    [ObsoletedOSPlatform("android28.0")]
     public override void OnResume()
     {
         base.OnResume();

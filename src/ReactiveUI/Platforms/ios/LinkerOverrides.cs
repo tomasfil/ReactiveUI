@@ -1,9 +1,8 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
 using UIKit;
 
 namespace ReactiveUI.Cocoa;
@@ -17,7 +16,7 @@ internal class LinkerOverrides
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Used by linker.")]
     public void KeepMe()
     {
-        // UIButon
+        // UIButton
         var btn = new UIButton();
         var title = btn.Title(UIControlState.Disabled);
         btn.SetTitle("foo", UIControlState.Disabled);
@@ -48,25 +47,28 @@ internal class LinkerOverrides
         ctl.Enabled = ctl.Enabled;
         ctl.Selected = ctl.Selected;
 
-        EventHandler eh = (s, e) => { };
-        ctl.TouchUpInside += eh;
-        ctl.TouchUpInside -= eh;
+        static void Eh(object? s, EventArgs e)
+        {
+        }
+
+        ctl.TouchUpInside += Eh;
+        ctl.TouchUpInside -= Eh;
 
         // UIRefreshControl
         var rc = new UIRefreshControl();
-        rc.ValueChanged += eh;
-        rc.ValueChanged -= eh;
+        rc.ValueChanged += Eh;
+        rc.ValueChanged -= Eh;
 
         // UIBarButtonItem
         var bbi = new UIBarButtonItem();
-        bbi.Clicked += eh;
-        bbi.Clicked -= eh;
+        bbi.Clicked += Eh;
+        bbi.Clicked -= Eh;
 
         // UISwitch
         var sw = new UISwitch();
-        sw.ValueChanged += eh;
+        sw.ValueChanged += Eh;
         sw.On = true;
 
-        eh.Invoke(null, EventArgs.Empty);
+        Eh(null, EventArgs.Empty);
     }
 }

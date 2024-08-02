@@ -1,14 +1,7 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reactive.Linq;
-using Splat;
 
 namespace ReactiveUI;
 
@@ -54,10 +47,7 @@ public static class ReactiveNotifyPropertyChangedMixin
         bool beforeChange = false,
         bool skipInitial = true)
     {
-        if (property is null)
-        {
-            throw new ArgumentNullException(nameof(property));
-        }
+        property.ArgumentNullExceptionThrowIfNull(nameof(property));
 
         /* x => x.Foo.Bar.Baz;
          *
@@ -106,10 +96,8 @@ public static class ReactiveNotifyPropertyChangedMixin
         bool beforeChange = false) // TODO: Create Test
         where TSender : class
     {
-        if (selector is null)
-        {
-            throw new ArgumentNullException(nameof(property));
-        }
+        property.ArgumentNullExceptionThrowIfNull(nameof(property));
+        selector.ArgumentNullExceptionThrowIfNull(nameof(selector));
 
         return item.ObservableForProperty(property, beforeChange).Select(x => selector(x.Value));
     }
@@ -154,7 +142,7 @@ public static class ReactiveNotifyPropertyChangedMixin
         {
             // ensure cast to TValue will succeed, throw useful exception otherwise
             var val = x.GetValue();
-            if (val is not null && !(val is TValue))
+            if (val is not null && val is not TValue)
             {
                 throw new InvalidCastException($"Unable to cast from {val.GetType()} to {typeof(TValue)}.");
             }
@@ -168,7 +156,7 @@ public static class ReactiveNotifyPropertyChangedMixin
     private static IObservable<IObservedChange<object?, object?>> NestedObservedChanges(Expression expression, IObservedChange<object?, object?> sourceChange, bool beforeChange, bool suppressWarnings)
     {
         // Make sure a change at a root node propagates events down
-        var kicker = new ObservedChange<object?, object?>(sourceChange.Value!, expression, default);
+        var kicker = new ObservedChange<object?, object?>(sourceChange.Value, expression, default);
 
         // Handle null values in the chain
         if (sourceChange.Value is null)
@@ -184,25 +172,16 @@ public static class ReactiveNotifyPropertyChangedMixin
 
     private static IObservable<IObservedChange<object?, object?>> NotifyForProperty(object sender, Expression expression, bool beforeChange, bool suppressWarnings)
     {
-        if (expression is null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        expression.ArgumentNullExceptionThrowIfNull(nameof(expression));
 
-        var memberInfo = expression.GetMemberInfo();
-        if (memberInfo is null)
-        {
-            throw new ArgumentException("The expression does not have valid member info", nameof(expression));
-        }
-
+        var memberInfo = expression.GetMemberInfo() ?? throw new ArgumentException("The expression does not have valid member info", nameof(expression));
         var propertyName = memberInfo.Name;
         var result = _notifyFactoryCache.Get((sender.GetType(), propertyName, beforeChange));
 
-        if (result is null)
+        return result switch
         {
-            throw new Exception($"Could not find a ICreatesObservableForProperty for {sender.GetType()} property {propertyName}. This should never happen, your service locator is probably broken. Please make sure you have installed the latest version of the ReactiveUI packages for your platform. See https://reactiveui.net/docs/getting-started/installation for guidance.");
-        }
-
-        return result.GetNotificationForProperty(sender, expression, propertyName, beforeChange, suppressWarnings);
+            null => throw new Exception($"Could not find a ICreatesObservableForProperty for {sender.GetType()} property {propertyName}. This should never happen, your service locator is probably broken. Please make sure you have installed the latest version of the ReactiveUI packages for your platform. See https://reactiveui.net/docs/getting-started/installation for guidance."),
+            _ => result.GetNotificationForProperty(sender, expression, propertyName, beforeChange, suppressWarnings)
+        };
     }
 }

@@ -1,15 +1,11 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using System.Reflection;
 using System.Windows.Input;
+
 using UIKit;
 
 namespace ReactiveUI;
@@ -24,7 +20,7 @@ public abstract class FlexibleCommandBinder : ICreatesCommandBinding
     /// Configuration map.
     /// </summary>
     private readonly Dictionary<Type, CommandBindingInfo> _config =
-        new();
+        [];
 
     /// <inheritdoc/>
     public int GetAffinityForObject(Type type, bool hasEventTarget)
@@ -51,23 +47,14 @@ public abstract class FlexibleCommandBinder : ICreatesCommandBinding
     /// <inheritdoc/>
     public IDisposable? BindCommandToObject(ICommand? command, object? target, IObservable<object?> commandParameter)
     {
-        if (target is null)
-        {
-            throw new ArgumentNullException(nameof(target));
-        }
+        ArgumentNullException.ThrowIfNull(target);
 
         var type = target.GetType();
 
         var match = _config.Keys
                            .Where(x => x.IsAssignableFrom(type))
                            .OrderByDescending(x => _config[x].Affinity)
-                           .FirstOrDefault();
-
-        if (match is null)
-        {
-            throw new NotSupportedException($"CommandBinding for {type.Name} is not supported");
-        }
-
+                           .FirstOrDefault() ?? throw new NotSupportedException($"CommandBinding for {type.Name} is not supported");
         var typeProperties = _config[match];
 
         return typeProperties?.CreateBinding?.Invoke(command, target, commandParameter) ?? Disposable.Empty;
@@ -75,10 +62,7 @@ public abstract class FlexibleCommandBinder : ICreatesCommandBinding
 
     /// <inheritdoc/>
     public IDisposable? BindCommandToObject<TEventArgs>(ICommand? command, object? target, IObservable<object?> commandParameter, string eventName)
-        where TEventArgs : EventArgs =>
-#pragma warning disable RCS1079 // Throwing of new NotImplementedException.
-        throw new NotImplementedException();
-#pragma warning restore RCS1079 // Throwing of new NotImplementedException.
+        where TEventArgs : EventArgs => throw new NotImplementedException();
 
     /// <summary>
     /// Creates a commands binding from event and a property.
@@ -91,10 +75,7 @@ public abstract class FlexibleCommandBinder : ICreatesCommandBinding
     /// <param name="enabledProperty">Enabled Property.</param>
     protected static IDisposable ForEvent(ICommand? command, object? target, IObservable<object?> commandParameter, string eventName, PropertyInfo enabledProperty)
     {
-        if (command is null)
-        {
-            throw new ArgumentNullException(nameof(command));
-        }
+        ArgumentNullException.ThrowIfNull(command);
 
         commandParameter ??= Observable.Return(target);
 
@@ -142,10 +123,7 @@ public abstract class FlexibleCommandBinder : ICreatesCommandBinding
     /// <returns>Returns a disposable.</returns>
     protected static IDisposable ForTargetAction(ICommand? command, object? target, IObservable<object?> commandParameter, PropertyInfo enabledProperty)
     {
-        if (command is null)
-        {
-            throw new ArgumentNullException(nameof(command));
-        }
+        ArgumentNullException.ThrowIfNull(command);
 
         commandParameter ??= Observable.Return(target);
 

@@ -1,11 +1,10 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
+using System.Runtime.Versioning;
+
 using Android.App;
 using Android.Content;
 using Android.Hardware.Usb;
@@ -62,18 +61,10 @@ public static class UsbManagerExtensions
     /// <summary>
     /// Private implementation of BroadcastReceiver to handle device permission requests.
     /// </summary>
-    private class UsbDevicePermissionReceiver
-        : BroadcastReceiver
+    private class UsbDevicePermissionReceiver(IObserver<bool> observer, UsbDevice device)
+                : BroadcastReceiver
     {
-        private readonly IObserver<bool> _observer;
-        private readonly UsbDevice _device;
-
-        public UsbDevicePermissionReceiver(IObserver<bool> observer, UsbDevice device)
-        {
-            _observer = observer;
-            _device = device;
-        }
-
+        [ObsoletedOSPlatform("android33.0")]
         public override void OnReceive(Context? context, Intent? intent)
         {
             if (intent is null)
@@ -82,32 +73,24 @@ public static class UsbManagerExtensions
             }
 
             var extraDevice = intent.GetParcelableExtra(UsbManager.ExtraDevice) as UsbDevice;
-            if (_device.DeviceName != extraDevice?.DeviceName)
+            if (device.DeviceName != extraDevice?.DeviceName)
             {
                 return;
             }
 
             var permissionGranted = intent.GetBooleanExtra(UsbManager.ExtraPermissionGranted, false);
-            _observer.OnNext(permissionGranted);
-            _observer.OnCompleted();
+            observer.OnNext(permissionGranted);
+            observer.OnCompleted();
         }
     }
 
     /// <summary>
     /// Private implementation of BroadcastReceiver to handle accessory permission requests.
     /// </summary>
-    private class UsbAccessoryPermissionReceiver
-        : BroadcastReceiver
+    private class UsbAccessoryPermissionReceiver(IObserver<bool> observer, UsbAccessory accessory)
+                : BroadcastReceiver
     {
-        private readonly IObserver<bool> _observer;
-        private readonly UsbAccessory _accessory;
-
-        public UsbAccessoryPermissionReceiver(IObserver<bool> observer, UsbAccessory accessory)
-        {
-            _observer = observer;
-            _accessory = accessory;
-        }
-
+        [ObsoletedOSPlatform("android33.0")]
         public override void OnReceive(Context? context, Intent? intent)
         {
             if (intent?.GetParcelableExtra(UsbManager.ExtraAccessory) is not UsbAccessory extraAccessory)
@@ -115,14 +98,14 @@ public static class UsbManagerExtensions
                 return;
             }
 
-            if (_accessory.Manufacturer != extraAccessory.Manufacturer || _accessory.Model != extraAccessory.Model)
+            if (accessory.Manufacturer != extraAccessory.Manufacturer || accessory.Model != extraAccessory.Model)
             {
                 return;
             }
 
             var permissionGranted = intent.GetBooleanExtra(UsbManager.ExtraPermissionGranted, false);
-            _observer.OnNext(permissionGranted);
-            _observer.OnCompleted();
+            observer.OnNext(permissionGranted);
+            observer.OnCompleted();
         }
     }
 }

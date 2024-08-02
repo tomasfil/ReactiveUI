@@ -1,34 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-	<PropertyGroup>
-		<TargetFrameworks>net6.0</TargetFrameworks>
-		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net6.0-windows10.0.17763.0</TargetFrameworks>
-		<PackageDescription>Contains the ReactiveUI platform specific extensions for Microsoft Maui</PackageDescription>
-		<PackageTags>mvvm;reactiveui;rx;reactive extensions;observable;LINQ;events;frp;maui;android;ios;mac;forms;net</PackageTags>
-		<UseMaui>true</UseMaui>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="$(TargetFramework.StartsWith('net6.0-windows10'))">
-		<DefineConstants>HAS_WINUI</DefineConstants>
-	</PropertyGroup>
-	<PropertyGroup Condition="!$(TargetFramework.StartsWith('net6.0-windows10'))">
-		<DefineConstants>HAS_MAUI</DefineConstants>
-	</PropertyGroup>
-
-	<ItemGroup Condition="$(TargetFramework.StartsWith('net6.0-windows10'))">
-		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.5" />
-	</ItemGroup>
-	<ItemGroup>
-		<ProjectReference Include="..\ReactiveUI\ReactiveUI.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Compile Include="..\ReactiveUI.Uwp\Common\AutoDataTemplateBindingHook.cs" LinkBase="Common" />
-		<Compile Include="..\ReactiveUI.Uwp\Common\BooleanToVisibilityHint.cs" LinkBase="Common" />
-		<Compile Include="..\ReactiveUI.Uwp\Common\BooleanToVisibilityTypeConverter.cs" LinkBase="Common" />
-		<Compile Include="..\ReactiveUI.Uwp\Common\ReactivePage.cs" LinkBase="Common" />
-		<Compile Include="..\ReactiveUI.WinUI\DependencyObjectObservableForProperty.cs" LinkBase="ReactiveUI.WinUI" />
-		<Compile Include="..\ReactiveUI.WinUI\DispatcherQueueScheduler.cs" LinkBase="ReactiveUI.WinUI" />
-	</ItemGroup>
-
+  <PropertyGroup>
+    <TargetFrameworks>net8.0</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.19041.0</TargetFrameworks>
+    <PackageDescription>Contains the ReactiveUI platform specific extensions for Microsoft Maui</PackageDescription>
+    <PackageTags>mvvm;reactiveui;rx;reactive extensions;observable;LINQ;events;frp;maui;android;ios;mac;windows;net</PackageTags>
+    <UseMaui>true</UseMaui>
+    <DefineConstants>$(DefineConstants);IS_MAUI</DefineConstants>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">11.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.1</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.19041.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(TargetFramework.EndsWith('-windows10.0.19041.0'))">
+    <DefineConstants>$(DefineConstants);WINUI_TARGET</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ReactiveUI\ReactiveUI.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Common\RoutedViewHost.cs" />
+    <Compile Remove="Common\ViewModelViewHost.cs" />
+    <Compile Remove="WinUI\TransitioningContentControl.Empty.cs" />
+  </ItemGroup>
 </Project>

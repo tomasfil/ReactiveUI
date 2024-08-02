@@ -1,12 +1,8 @@
-// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -78,12 +74,14 @@ public class TransitioningContentControl : ContentControl
     /// <summary>
     /// Occurs when a transition has completed.
     /// </summary>
+#pragma warning disable RCS1159 // Use EventHandler<T>.
     public event RoutedEventHandler? TransitionCompleted;
 
     /// <summary>
     /// Occurs when a transition has started.
     /// </summary>
     public event RoutedEventHandler? TransitionStarted;
+#pragma warning restore RCS1159 // Use EventHandler<T>.
 
     /// <summary>
     /// Represents the type of transition that a TransitioningContentControl will perform.
@@ -376,12 +374,11 @@ public class TransitioningContentControl : ContentControl
                          .Where(o => o.Name == transitionName)
                          .Select(o => o.Storyboard).FirstOrDefault();
 
-        if (transition is null)
+        return transition switch
         {
-            throw new ArgumentException("Invalid transition");
-        }
-
-        return transition;
+            null => throw new ArgumentException("Invalid transition"),
+            _ => transition
+        };
     }
 
     /// <summary>

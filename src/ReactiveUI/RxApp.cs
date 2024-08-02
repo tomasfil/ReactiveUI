@@ -1,15 +1,10 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Reactive;
-using System.Reactive.Concurrency;
 using System.Runtime.CompilerServices;
-using Splat;
 
 namespace ReactiveUI;
 
@@ -57,16 +52,19 @@ public static class RxApp
 #endif
 
     [ThreadStatic]
+    [SuppressMessage("Reliability", "CA2019:Improper 'ThreadStatic' field initialization", Justification = "By Design")]
     private static IScheduler _unitTestTaskpoolScheduler = null!;
 
     private static IScheduler _taskpoolScheduler = null!;
 
     [ThreadStatic]
+    [SuppressMessage("Reliability", "CA2019:Improper 'ThreadStatic' field initialization", Justification = "By Design")]
     private static IScheduler _unitTestMainThreadScheduler = null!;
 
     private static IScheduler _mainThreadScheduler = null!;
 
     [ThreadStatic]
+    [SuppressMessage("Reliability", "CA2019:Improper 'ThreadStatic' field initialization", Justification = "By Design")]
     private static ISuspensionHost _unitTestSuspensionHost = null!;
 
     private static ISuspensionHost _suspensionHost = null!;
@@ -103,14 +101,11 @@ public static class RxApp
                 Debugger.Break();
             }
 
-            MainThreadScheduler.Schedule(() =>
-            {
 #pragma warning disable CA1065 // Avoid exceptions in constructors -- In scheduler.
-                throw new UnhandledErrorException(
+            MainThreadScheduler.Schedule(() => throw new UnhandledErrorException(
                     "An object implementing IHandleObservableErrors (often a ReactiveCommand or ObservableAsPropertyHelper) has errored, thereby breaking its observable pipeline. To prevent this, ensure the pipeline does not error, or Subscribe to the ThrownExceptions property of the object in question to handle the erroneous case.",
-                    ex);
+                    ex));
 #pragma warning restore CA1065
-            });
         });
 
         _suspensionHost = new SuspensionHost();
@@ -127,10 +122,7 @@ public static class RxApp
 
         LogHost.Default.Info("Initializing to normal mode");
 
-        if (_mainThreadScheduler is null)
-        {
-            _mainThreadScheduler = DefaultScheduler.Instance;
-        }
+        _mainThreadScheduler ??= DefaultScheduler.Instance;
     }
 
     /// <summary>

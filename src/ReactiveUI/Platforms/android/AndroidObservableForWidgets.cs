@@ -1,18 +1,15 @@
-// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reactive.Linq;
+using System.Runtime.Versioning;
+
 using Android.OS;
 using Android.Text;
 using Android.Views;
 using Android.Widget;
+
 using Observable = System.Reactive.Linq.Observable;
 
 namespace ReactiveUI;
@@ -25,7 +22,8 @@ public class AndroidObservableForWidgets : ICreatesObservableForProperty
 {
     private static readonly Dictionary<(Type viewType, string? propertyName), Func<object, Expression, IObservable<IObservedChange<object, object?>>>> _dispatchTable;
 
-#pragma warning disable CS0618 // Type or member is obsolete
+    [ObsoletedOSPlatform("android23.0")]
+    [SupportedOSPlatform("android23.0")]
     static AndroidObservableForWidgets() =>
         _dispatchTable = new[]
         {
@@ -39,7 +37,6 @@ public class AndroidObservableForWidgets : ICreatesObservableForProperty
             CreateTimePickerMinuteFromWidget(),
             CreateFromAdapterView(),
         }.ToDictionary(k => (viewType: k.Type, propertyName: k.Property), v => v.Func);
-#pragma warning restore CS0618 // Type or member is obsolete
 
     /// <inheritdoc/>
     public int GetAffinityForObject(Type type, string propertyName, bool beforeChanged = false)
@@ -49,23 +46,20 @@ public class AndroidObservableForWidgets : ICreatesObservableForProperty
             return 0;
         }
 
-        return _dispatchTable.Keys.Any(x => x.viewType is not null && (x.viewType.IsAssignableFrom(type) && x.propertyName == propertyName)) ? 5 : 0;
+        return _dispatchTable.Keys.Any(x => x.viewType?.IsAssignableFrom(type) == true && x.propertyName?.Equals(propertyName) == true) ? 5 : 0;
     }
 
     /// <inheritdoc/>
     public IObservable<IObservedChange<object, object?>> GetNotificationForProperty(object sender, Expression expression, string propertyName, bool beforeChanged = false, bool suppressWarnings = false)
     {
-        if (sender is null)
-        {
-            throw new ArgumentNullException(nameof(sender));
-        }
+        ArgumentNullException.ThrowIfNull(nameof(sender));
 
-        var type = sender.GetType();
-        var tableItem = _dispatchTable.Keys.First(x => x.viewType is not null && (x.viewType.IsAssignableFrom(type) && x.propertyName == propertyName));
+        var type = sender?.GetType();
+        var tableItem = _dispatchTable.Keys.First(x => x.viewType?.IsAssignableFrom(type) == true && x.propertyName?.Equals(propertyName) == true);
 
         return !_dispatchTable.TryGetValue(tableItem, out var dispatchItem) ?
                    Observable.Never<IObservedChange<object, object?>>() :
-                   dispatchItem.Invoke(sender, expression);
+                   dispatchItem.Invoke(sender!, expression);
     }
 
     private static DispatchItem CreateFromAdapterView()
@@ -113,6 +107,8 @@ public class AndroidObservableForWidgets : ICreatesObservableForProperty
                                 });
     }
 
+    [ObsoletedOSPlatform("android23.0")]
+    [SupportedOSPlatform("android23.0")]
     private static DispatchItem CreateTimePickerHourFromWidget()
     {
         if ((int)Build.VERSION.SdkInt >= 23)
@@ -120,11 +116,11 @@ public class AndroidObservableForWidgets : ICreatesObservableForProperty
             return CreateFromWidget<TimePicker, TimePicker.TimeChangedEventArgs>(v => v.Hour, (v, h) => v.TimeChanged += h, (v, h) => v.TimeChanged -= h);
         }
 
-#pragma warning disable 618
         return CreateFromWidget<TimePicker, TimePicker.TimeChangedEventArgs>(v => v.CurrentHour, (v, h) => v.TimeChanged += h, (v, h) => v.TimeChanged -= h);
-#pragma warning restore 618
     }
 
+    [ObsoletedOSPlatform("android23.0")]
+    [SupportedOSPlatform("android23.0")]
     private static DispatchItem CreateTimePickerMinuteFromWidget()
     {
         if ((int)Build.VERSION.SdkInt >= 23)
@@ -132,21 +128,14 @@ public class AndroidObservableForWidgets : ICreatesObservableForProperty
             return CreateFromWidget<TimePicker, TimePicker.TimeChangedEventArgs>(v => v.Minute, (v, h) => v.TimeChanged += h, (v, h) => v.TimeChanged -= h);
         }
 
-#pragma warning disable 618
         return CreateFromWidget<TimePicker, TimePicker.TimeChangedEventArgs>(v => v.CurrentMinute, (v, h) => v.TimeChanged += h, (v, h) => v.TimeChanged -= h);
-#pragma warning restore 618
     }
 
     private static DispatchItem CreateFromWidget<TView, TEventArgs>(Expression<Func<TView, object?>> property, Action<TView, EventHandler<TEventArgs>> addHandler, Action<TView, EventHandler<TEventArgs>> removeHandler)
         where TView : View
         where TEventArgs : EventArgs
     {
-        var memberInfo = property.Body.GetMemberInfo();
-
-        if (memberInfo is null)
-        {
-            throw new ArgumentException("Does not have a valid body member info.", nameof(property));
-        }
+        var memberInfo = property.Body.GetMemberInfo() ?? throw new ArgumentException("Does not have a valid body member info.", nameof(property));
 
         // ExpressionToPropertyNames is used here as it handles boxing expressions that might
         // occur due to our use of object

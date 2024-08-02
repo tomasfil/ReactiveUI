@@ -1,9 +1,7 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
-
-using System;
 
 namespace ReactiveUI;
 
@@ -13,19 +11,17 @@ namespace ReactiveUI;
 /// View, you can select between different Views for a single ViewModel
 /// instance.
 /// </summary>
+/// <remarks>
+/// Initializes a new instance of the <see cref="ViewContractAttribute"/> class.
+/// Constructs the ViewContractAttribute with a specific contract value.
+/// </remarks>
+/// <param name="contract">The value of the contract for view
+/// resolution.</param>
 [AttributeUsage(AttributeTargets.Class)]
-public sealed class ViewContractAttribute : Attribute
+public sealed class ViewContractAttribute(string contract) : Attribute
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ViewContractAttribute"/> class.
-    /// Constructs the ViewContractAttribute with a specific contract value.
-    /// </summary>
-    /// <param name="contract">The value of the contract for view
-    /// resolution.</param>
-    public ViewContractAttribute(string contract) => Contract = contract;
-
     /// <summary>
     /// Gets the contract to use when resolving the view in the Splat Dependency Injection engine.
     /// </summary>
-    public string Contract { get; }
+    public string Contract { get; } = contract;
 }

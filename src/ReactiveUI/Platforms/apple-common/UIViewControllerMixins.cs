@@ -1,59 +1,43 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using Foundation;
-
 #if UIKIT
-using UIKit;
 using NSView = UIKit.UIView;
 using NSViewController = UIKit.UIViewController;
 #else
 using AppKit;
 #endif
 
-namespace ReactiveUI
+namespace ReactiveUI;
+
+internal static class UIViewControllerMixins
 {
-    internal static class UIViewControllerMixins
+    internal static void ActivateSubviews(this NSViewController controller, bool activate)
     {
-        internal static void ActivateSubviews(this NSViewController controller, bool activate)
+        ArgumentNullException.ThrowIfNull(controller);
+
+        if (controller.View is null)
         {
-            if (controller is null)
-            {
-                throw new ArgumentNullException(nameof(controller));
-            }
-
-            if (controller.View is null)
-            {
-                throw new ArgumentException("The view on the controller is null.", nameof(controller));
-            }
-
-            controller.View.ActivateSubviews(activate);
+            throw new ArgumentException("The view on the controller is null.", nameof(controller));
         }
 
-        private static void ActivateSubviews(this NSView masterView, bool activate)
+        controller.View.ActivateSubviews(activate);
+    }
+
+    private static void ActivateSubviews(this NSView masterView, bool activate)
+    {
+        ArgumentNullException.ThrowIfNull(masterView);
+
+        foreach (var view in masterView.Subviews)
         {
-            if (masterView is null)
+            if (view is ICanForceManualActivation subview)
             {
-                throw new ArgumentNullException(nameof(masterView));
+                subview.Activate(activate);
             }
 
-            foreach (var view in masterView.Subviews)
-            {
-                if (view is ICanForceManualActivation subview)
-                {
-                    subview.Activate(activate);
-                }
-
-                view.ActivateSubviews(activate);
-            }
+            view.ActivateSubviews(activate);
         }
     }
 }

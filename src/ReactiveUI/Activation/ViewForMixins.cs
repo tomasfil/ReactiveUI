@@ -1,15 +1,9 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using Splat;
 
 namespace ReactiveUI;
 
@@ -44,10 +38,7 @@ public static class ViewForMixins
     /// </param>
     public static void WhenActivated(this IActivatableViewModel item, Func<IEnumerable<IDisposable>> block) // TODO: Create Test
     {
-        if (item is null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        item.ArgumentNullExceptionThrowIfNull(nameof(item));
 
         item.Activator.AddActivationBlock(block);
     }
@@ -65,10 +56,7 @@ public static class ViewForMixins
     /// </param>
     public static void WhenActivated(this IActivatableViewModel item, Action<Action<IDisposable>> block)
     {
-        if (item is null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        item.ArgumentNullExceptionThrowIfNull(nameof(item));
 
         item.Activator.AddActivationBlock(() =>
         {
@@ -90,10 +78,7 @@ public static class ViewForMixins
     /// </param>
     public static void WhenActivated(this IActivatableViewModel item, Action<CompositeDisposable> block) // TODO: Create Test
     {
-        if (item is null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        item.ArgumentNullExceptionThrowIfNull(nameof(item));
 
         item.Activator.AddActivationBlock(() =>
         {
@@ -116,10 +101,7 @@ public static class ViewForMixins
     /// <returns>A Disposable that deactivates this registration.</returns>
     public static IDisposable WhenActivated(this IActivatableView item, Func<IEnumerable<IDisposable>> block) // TODO: Create Test
     {
-        if (item is null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        item.ArgumentNullExceptionThrowIfNull(nameof(item));
 
         return item.WhenActivated(block, null);
     }
@@ -142,10 +124,7 @@ public static class ViewForMixins
     /// <returns>A Disposable that deactivates this registration.</returns>
     public static IDisposable WhenActivated(this IActivatableView item, Func<IEnumerable<IDisposable>> block, IViewFor? view) // TODO: Create Test
     {
-        if (item is null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        item.ArgumentNullExceptionThrowIfNull(nameof(item));
 
         var activationFetcher = _activationFetcherCache.Get(item.GetType());
         if (activationFetcher is null)
@@ -233,14 +212,14 @@ public static class ViewForMixins
                            },
                            view);
 
-    private static IDisposable HandleViewActivation(Func<IEnumerable<IDisposable>> block, IObservable<bool> activation)
+    private static CompositeDisposable HandleViewActivation(Func<IEnumerable<IDisposable>> block, IObservable<bool> activation)
     {
         var viewDisposable = new SerialDisposable();
 
         return new CompositeDisposable(
                                        activation.Subscribe(activated =>
                                        {
-                                           // NB: We need to make sure to respect ordering so that the cleanup
+                                           // NB: We need to make sure to respect ordering so that the clean up
                                            // happens before we invoke block again
                                            viewDisposable.Disposable = Disposable.Empty;
                                            if (activated)
@@ -251,7 +230,7 @@ public static class ViewForMixins
                                        viewDisposable);
     }
 
-    private static IDisposable HandleViewModelActivation(IViewFor view, IObservable<bool> activation)
+    private static CompositeDisposable HandleViewModelActivation(IViewFor view, IObservable<bool> activation)
     {
         var vmDisposable = new SerialDisposable();
         var viewVmDisposable = new SerialDisposable();
@@ -265,7 +244,7 @@ public static class ViewForMixins
                                                    .Select(x => x as IActivatableViewModel)
                                                    .Subscribe(x =>
                                                    {
-                                                       // NB: We need to make sure to respect ordering so that the cleanup
+                                                       // NB: We need to make sure to respect ordering so that the clean up
                                                        // happens before we activate again
                                                        vmDisposable.Disposable = Disposable.Empty;
                                                        if (x is not null)

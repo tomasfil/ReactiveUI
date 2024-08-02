@@ -1,17 +1,15 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Reactive;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
+
 using CoreGraphics;
+
 using Foundation;
+
 using UIKit;
 
 namespace ReactiveUI;
@@ -74,7 +72,7 @@ public abstract class ReactiveTableView : UITableView, IReactiveNotifyPropertyCh
     /// Initializes a new instance of the <see cref="ReactiveTableView"/> class.
     /// </summary>
     /// <param name="handle">The pointer.</param>
-    protected ReactiveTableView(IntPtr handle)
+    protected ReactiveTableView(in IntPtr handle)
         : base(handle)
     {
     }
@@ -194,7 +192,7 @@ public abstract class ReactiveTableView<TViewModel> : ReactiveTableView, IViewFo
     /// Initializes a new instance of the <see cref="ReactiveTableView{TViewModel}"/> class.
     /// </summary>
     /// <param name="handle">The pointer.</param>
-    protected ReactiveTableView(IntPtr handle)
+    protected ReactiveTableView(in IntPtr handle)
         : base(handle)
     {
     }

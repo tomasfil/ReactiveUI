@@ -1,21 +1,19 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+
 using Android.App;
 using Android.Views;
 
 namespace ReactiveUI;
 
 /// <summary>
-/// ControlFetcherMixin helps you automatically wire-up Activities and
+/// Control Fetcher Mix-in helps you automatically wire-up Activities and
 /// Fragments via property names, similar to Butter Knife, as well as allows
 /// you to fetch controls manually.
 /// </summary>
@@ -23,7 +21,7 @@ public static partial class ControlFetcherMixin
 {
     private static readonly ConcurrentDictionary<Assembly, Dictionary<string, int>> _controlIds = new();
 
-    private static readonly ConditionalWeakTable<object, Dictionary<string, View?>> _viewCache = new();
+    private static readonly ConditionalWeakTable<object, Dictionary<string, View?>> _viewCache = [];
 
     /// <summary>
     /// Gets the control from an activity.
@@ -51,10 +49,7 @@ public static partial class ControlFetcherMixin
     /// <param name="resolveMembers">The resolve members.</param>
     public static void WireUpControls(this ILayoutViewHost layoutHost, ResolveStrategy resolveMembers = ResolveStrategy.Implicit) // TODO: Create Test
     {
-        if (layoutHost is null)
-        {
-            throw new ArgumentNullException(nameof(layoutHost));
-        }
+        ArgumentNullException.ThrowIfNull(layoutHost);
 
         var members = layoutHost.GetWireUpMembers(resolveMembers).ToList();
         foreach (var member in members)
@@ -79,10 +74,7 @@ public static partial class ControlFetcherMixin
     /// <param name="resolveMembers">The resolve members.</param>
     public static void WireUpControls(this View view, ResolveStrategy resolveMembers = ResolveStrategy.Implicit) // TODO: Create Test
     {
-        if (view is null)
-        {
-            throw new ArgumentNullException(nameof(view));
-        }
+        ArgumentNullException.ThrowIfNull(view);
 
         var members = view.GetWireUpMembers(resolveMembers);
 
@@ -111,13 +103,9 @@ public static partial class ControlFetcherMixin
     /// <param name="fragment">The fragment.</param>
     /// <param name="inflatedView">The inflated view.</param>
     /// <param name="resolveMembers">The resolve members.</param>
-    [Obsolete("This class is obsoleted in this android platform")]
     public static void WireUpControls(this Fragment fragment, View inflatedView, ResolveStrategy resolveMembers = ResolveStrategy.Implicit) // TODO: Create Test
     {
-        if (fragment is null)
-        {
-            throw new ArgumentNullException(nameof(fragment));
-        }
+        ArgumentNullException.ThrowIfNull(fragment);
 
         var members = fragment.GetWireUpMembers(resolveMembers);
 
@@ -146,10 +134,7 @@ public static partial class ControlFetcherMixin
     /// <param name="resolveMembers">The resolve members.</param>
     public static void WireUpControls(this Activity activity, ResolveStrategy resolveMembers = ResolveStrategy.Implicit) // TODO: Create Test
     {
-        if (activity is null)
-        {
-            throw new ArgumentNullException(nameof(activity));
-        }
+        ArgumentNullException.ThrowIfNull(activity);
 
         var members = activity.GetWireUpMembers(resolveMembers);
 
@@ -195,15 +180,9 @@ public static partial class ControlFetcherMixin
 
     private static View? GetCachedControl(string? propertyName, object rootView, Func<View?> fetchControlFromView)
     {
-        if (propertyName is null)
-        {
-            throw new ArgumentNullException(nameof(propertyName));
-        }
+        ArgumentNullException.ThrowIfNull(propertyName);
 
-        if (fetchControlFromView is null)
-        {
-            throw new ArgumentNullException(nameof(fetchControlFromView));
-        }
+        ArgumentNullException.ThrowIfNull(fetchControlFromView);
 
         var ourViewCache = _viewCache.GetOrCreateValue(rootView);
 
@@ -220,25 +199,25 @@ public static partial class ControlFetcherMixin
 
     private static int GetControlIdByName(Assembly assembly, string? name)
     {
-        if (name is null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         var ids = _controlIds.GetOrAdd(
                                        assembly,
                                        currentAssembly =>
                                        {
-                                           var resources = currentAssembly.GetModules().SelectMany(x => x.GetTypes()).First(x => x.Name == "Resource");
+#if NET8_0_OR_GREATER
+                                            var resources = Assembly.Load(currentAssembly
+                                                            .GetReferencedAssemblies()
+                                                            .First(an => an.FullName.StartsWith("_Microsoft.Android.Resource.Designer")).ToString())
+                                                            .GetModules()
+                                                            .SelectMany(x => x.GetTypes())
+                                                            .First(x => x.Name == "ResourceConstant");
+#else
+                                            var resources = currentAssembly.GetModules().SelectMany(x => x.GetTypes()).First(x => x.Name == "Resource");
+#endif
 
-                                           var idType = resources.GetNestedType("Id");
-
-                                           if (idType is null)
-                                           {
-                                               throw new InvalidOperationException("Id is not a valid nested type in the resources.");
-                                           }
-
-                                           return idType.GetFields()
+                                            var idType = resources.GetNestedType("Id") ?? throw new InvalidOperationException("Id is not a valid nested type in the resources.");
+                                            return idType.GetFields()
                                                         .Where(x => x.FieldType == typeof(int))
                                                         .ToDictionary(k => k.Name, v => ((int?)v.GetRawConstantValue()) ?? 0, StringComparer.InvariantCultureIgnoreCase);
                                        });

@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
@@ -11,8 +11,8 @@ namespace ReactiveUI.Maui;
 /// This is an <see cref="ViewCell"/> that is also an <see cref="IViewFor{T}"/>.
 /// </summary>
 /// <typeparam name="TViewModel">The type of the view model.</typeparam>
-/// <seealso cref="Microsoft.Maui.Controls.ViewCell" />
-/// <seealso cref="ReactiveUI.IViewFor{TViewModel}" />
+/// <seealso cref="ViewCell" />
+/// <seealso cref="IViewFor{TViewModel}" />
 public class ReactiveViewCell<TViewModel> : ViewCell, IViewFor<TViewModel>
     where TViewModel : class
 {

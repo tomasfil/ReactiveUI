@@ -1,14 +1,10 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
+using System.Runtime.Versioning;
+
 using Android.App;
 using Android.Runtime;
 
@@ -18,51 +14,6 @@ namespace ReactiveUI;
 /// This is a Fragment that is both an Activity and has ReactiveObject powers
 /// (i.e. you can call RaiseAndSetIfChanged).
 /// </summary>
-/// <typeparam name="TViewModel">The view model type.</typeparam>
-[SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleType", Justification = "Classes with the same class names within.")]
-[Obsolete("This class was deprecated in API level 28. Use the ReactiveFragment in ReactiveUI.AndroidX (recommended) or ReactiveUI.AndroidSupport for consistent behavior across all devices and access to Lifecycle.", false)]
-public class ReactiveFragment<TViewModel> : ReactiveFragment, IViewFor<TViewModel>, ICanActivate
-    where TViewModel : class
-{
-    private TViewModel? _viewModel;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ReactiveFragment{TViewModel}"/> class.
-    /// </summary>
-    protected ReactiveFragment()
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ReactiveFragment{TViewModel}"/> class.
-    /// </summary>
-    /// <param name="handle">The handle.</param>
-    /// <param name="ownership">The ownership.</param>
-    protected ReactiveFragment(IntPtr handle, JniHandleOwnership ownership)
-        : base(handle, ownership)
-    {
-    }
-
-    /// <inheritdoc/>
-    public TViewModel? ViewModel
-    {
-        get => _viewModel;
-        set => this.RaiseAndSetIfChanged(ref _viewModel, value);
-    }
-
-    /// <inheritdoc/>
-    object? IViewFor.ViewModel
-    {
-        get => _viewModel;
-        set => _viewModel = (TViewModel?)value!;
-    }
-}
-
-/// <summary>
-/// This is a Fragment that is both an Activity and has ReactiveObject powers
-/// (i.e. you can call RaiseAndSetIfChanged).
-/// </summary>
-[Obsolete("This class was deprecated in API level 28. Use the ReactiveFragment in ReactiveUI.AndroidX (recommended) or ReactiveUI.AndroidSupport for consistent behavior across all devices and access to Lifecycle.", false)]
 public class ReactiveFragment : Fragment, IReactiveNotifyPropertyChanged<ReactiveFragment>, IReactiveObject, IHandleObservableErrors
 {
     private readonly Subject<Unit> _activated = new();
@@ -80,7 +31,8 @@ public class ReactiveFragment : Fragment, IReactiveNotifyPropertyChanged<Reactiv
     /// </summary>
     /// <param name="handle">The handle.</param>
     /// <param name="ownership">The ownership.</param>
-    protected ReactiveFragment(IntPtr handle, JniHandleOwnership ownership)
+    [ObsoletedOSPlatform("android28.0")]
+    protected ReactiveFragment(in IntPtr handle, JniHandleOwnership ownership)
         : base(handle, ownership)
     {
     }
@@ -132,7 +84,7 @@ public class ReactiveFragment : Fragment, IReactiveNotifyPropertyChanged<Reactiv
     public IDisposable SuppressChangeNotifications() => IReactiveObjectExtensions.SuppressChangeNotifications(this);
 
     /// <inheritdoc/>
-    [Obsolete("deprecated")]
+    [ObsoletedOSPlatform("android28.0")]
     public override void OnPause()
     {
         base.OnPause();
@@ -140,7 +92,7 @@ public class ReactiveFragment : Fragment, IReactiveNotifyPropertyChanged<Reactiv
     }
 
     /// <inheritdoc/>
-    [Obsolete("deprecated")]
+    [ObsoletedOSPlatform("android28.0")]
     public override void OnResume()
     {
         base.OnResume();

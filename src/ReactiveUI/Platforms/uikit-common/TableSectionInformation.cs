@@ -1,19 +1,19 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
+
 using Foundation;
+
 using UIKit;
 
 namespace ReactiveUI;
 
 /// <summary>
-/// Class used to extract a common API between <see cref="UIKit.UITableView"/>
-/// and <see cref="UIKit.UITableViewCell"/>.
+/// Class used to extract a common API between <see cref="UITableView"/>
+/// and <see cref="UITableViewCell"/>.
 /// </summary>
 /// <typeparam name="TSource">The type of the source.</typeparam>
 public class TableSectionInformation<TSource> : ISectionInformation<UITableViewCell>

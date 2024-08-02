@@ -1,13 +1,10 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Reactive.Linq;
 using System.Reflection;
 using System.Windows;
-using System.Windows.Threading;
 
 namespace ReactiveUI;
 
@@ -24,7 +21,7 @@ public class ActivationForViewFetcher : IActivationForViewFetcher
     /// <inheritdoc/>
     public IObservable<bool> GetActivationForView(IActivatableView view)
     {
-        if (!(view is FrameworkElement fe))
+        if (view is not FrameworkElement fe)
         {
             return Observable<bool>.Empty;
         }

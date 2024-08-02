@@ -1,29 +1,23 @@
-// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using Foundation;
-using Splat;
+
 using UIKit;
+
 using NSAction = System.Action;
 
 namespace ReactiveUI;
 
 /// <summary>
+/// <para>
 /// AutoSuspend-based App Delegate. To use AutoSuspend with iOS, change your
 /// AppDelegate to inherit from this class, then call:
-///
-/// Locator.Current.GetService{ISuspensionHost}().SetupDefaultSuspendResume();
-///
-/// This will get your suspension host.
+/// </para>
+/// <para>Locator.Current.GetService{ISuspensionHost}().SetupDefaultSuspendResume();.</para>
+/// <para>This will get your suspension host.</para>
 /// </summary>
 public class AutoSuspendHelper : IEnableLogger, IDisposable
 {
@@ -40,11 +34,11 @@ public class AutoSuspendHelper : IEnableLogger, IDisposable
     public AutoSuspendHelper(UIApplicationDelegate appDelegate)
     {
         Reflection.ThrowIfMethodsNotOverloaded(
-                                               "AutoSuspendHelper",
+                                               nameof(AutoSuspendHelper),
                                                appDelegate,
-                                               "FinishedLaunching",
-                                               "OnActivated",
-                                               "DidEnterBackground");
+                                               nameof(FinishedLaunching),
+                                               nameof(OnActivated),
+                                               nameof(DidEnterBackground));
 
         RxApp.SuspensionHost.IsLaunchingNew = Observable<Unit>.Never;
         RxApp.SuspensionHost.IsResuming = _finishedLaunching.Select(_ => Unit.Default);
@@ -88,7 +82,7 @@ public class AutoSuspendHelper : IEnableLogger, IDisposable
     {
         LaunchOptions = launchOptions is not null
                             ? launchOptions.Keys.ToDictionary(k => k.ToString(), v => launchOptions[v].ToString())
-                            : new Dictionary<string, string>();
+                            : [];
 
         // NB: This is run in-context (i.e. not scheduled), so by the time this
         // statement returns, UIWindow should be created already

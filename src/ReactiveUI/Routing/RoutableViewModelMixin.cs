@@ -1,12 +1,7 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
-
-using System;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
 
 using DynamicData;
 
@@ -17,7 +12,7 @@ namespace ReactiveUI;
 /// </summary>
 public static class RoutableViewModelMixin
 {
-    private static readonly ListChangeReason[] _navigationStackRemovalOperations = { ListChangeReason.Remove, ListChangeReason.RemoveRange };
+    private static readonly ListChangeReason[] _navigationStackRemovalOperations = [ListChangeReason.Remove, ListChangeReason.RemoveRange];
 
     /// <summary>
     /// This method allows you to set up connections that only operate
@@ -32,10 +27,7 @@ public static class RoutableViewModelMixin
     /// earlier than normal.</returns>
     public static IDisposable WhenNavigatedTo(this IRoutableViewModel item, Func<IDisposable> onNavigatedTo)
     {
-        if (item is null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        item.ArgumentNullExceptionThrowIfNull(nameof(item));
 
         IDisposable? inner = null;
 
@@ -70,17 +62,14 @@ public static class RoutableViewModelMixin
     /// and resubscribe each time it is reused.
     /// </para>
     /// </summary>
-    /// <param name="item">The viewmodel to watch for navigation changes.</param>
+    /// <param name="item">The ViewModel to watch for navigation changes.</param>
     /// <returns>An IObservable{Unit} that signals when the ViewModel has
     /// been added or brought to the top of the navigation stack. The
     /// observable completes when the ViewModel is no longer a part of the
     /// navigation stack.</returns>
     public static IObservable<Unit> WhenNavigatedToObservable(this IRoutableViewModel item)
     {
-        if (item is null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        item.ArgumentNullExceptionThrowIfNull(nameof(item));
 
         var router = item.HostScreen.Router;
         var navigationStackChanged = router.NavigationChanged.CountChanged();
@@ -105,22 +94,19 @@ public static class RoutableViewModelMixin
     /// and resubscribe each time it is reused.
     /// </para>
     /// </summary>
-    /// /// <param name="item">The viewmodel to watch for navigation changes.</param>
+    /// /// <param name="item">The ViewModel to watch for navigation changes.</param>
     /// <returns>An IObservable{Unit} that signals when the ViewModel is no
     /// longer the topmost ViewModel in the navigation stack. The observable
     /// completes when the ViewModel is no longer a part of the navigation
     /// stack.</returns>
     public static IObservable<Unit> WhenNavigatingFromObservable(this IRoutableViewModel item)
     {
-        if (item is null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        item.ArgumentNullExceptionThrowIfNull(nameof(item));
 
         var router = item.HostScreen.Router;
         var navigationStackChanged = router.NavigationChanged.CountChanged();
         var itemRemoved = navigationStackChanged.Where(x => WasItemRemoved(x, item));
-        var viewModelsChanged = navigationStackChanged.Scan(new IRoutableViewModel?[2], (previous, _) => new[] { previous[1], router.GetCurrentViewModel() });
+        var viewModelsChanged = navigationStackChanged.Scan(new IRoutableViewModel?[2], (previous, _) => [previous[1], router.GetCurrentViewModel()]);
 
         return viewModelsChanged
                .Where(x => x[0] == item)

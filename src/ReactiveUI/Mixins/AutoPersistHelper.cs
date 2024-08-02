@@ -1,23 +1,13 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Concurrency;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
 
 using DynamicData;
 using DynamicData.Binding;
-using Splat;
 
 namespace ReactiveUI;
 
@@ -39,7 +29,7 @@ public static class AutoPersistHelper
     /// <summary>
     /// AutoPersist allows you to automatically call a method when an object
     /// has changed, throttling on a certain interval. Note that this object
-    /// must mark its persistable properties via the [DataMember] attribute.
+    /// must mark its persistent properties via the [DataMember] attribute.
     /// Changes to properties not marked with DataMember will not trigger the
     /// object to be saved.
     /// </summary>
@@ -62,7 +52,7 @@ public static class AutoPersistHelper
     /// <summary>
     /// AutoPersist allows you to automatically call a method when an object
     /// has changed, throttling on a certain interval. Note that this object
-    /// must mark its persistable properties via the [DataMember] attribute.
+    /// must mark its persistent properties via the [DataMember] attribute.
     /// Changes to properties not marked with DataMember will not trigger the
     /// object to be saved.
     /// </summary>
@@ -296,20 +286,9 @@ public static class AutoPersistHelper
         where TItem : IReactiveObject
         where TCollection : INotifyCollectionChanged, IEnumerable<TItem>
     {
-        if (onAdd is null)
-        {
-            throw new ArgumentNullException(nameof(onAdd));
-        }
-
-        if (onRemove is null)
-        {
-            throw new ArgumentNullException(nameof(onRemove));
-        }
-
-        if (collection is null)
-        {
-            throw new ArgumentNullException(nameof(collection));
-        }
+        onAdd.ArgumentNullExceptionThrowIfNull(nameof(onAdd));
+        onRemove.ArgumentNullExceptionThrowIfNull(nameof(onRemove));
+        collection.ArgumentNullExceptionThrowIfNull(nameof(collection));
 
         foreach (var v in collection)
         {

@@ -1,11 +1,8 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+﻿// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Linq.Expressions;
-using System.Reactive.Linq;
 using System.Reflection;
 
 namespace ReactiveUI;
@@ -29,10 +26,7 @@ public class IROObservableForProperty : ICreatesObservableForProperty
     /// <inheritdoc/>
     public IObservable<IObservedChange<object, object?>> GetNotificationForProperty(object sender, Expression expression, string propertyName, bool beforeChanged = false, bool suppressWarnings = false)
     {
-        if (expression is null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        expression.ArgumentNullExceptionThrowIfNull(nameof(expression));
 
         if (sender is not IReactiveObject iro)
         {
@@ -46,20 +40,20 @@ public class IROObservableForProperty : ICreatesObservableForProperty
             if (expression.NodeType == ExpressionType.Index)
             {
                 return obs.Where(x => x.PropertyName?.Equals(propertyName + "[]", StringComparison.InvariantCulture) == true)
-                          .Select(_ => new ObservedChange<object, object?>(sender, expression, default!));
+                          .Select(_ => new ObservedChange<object, object?>(sender, expression, default));
             }
 
             return obs.Where(x => x.PropertyName?.Equals(propertyName, StringComparison.InvariantCulture) == true)
-                      .Select(_ => new ObservedChange<object, object?>(sender, expression, default!));
+                      .Select(_ => new ObservedChange<object, object?>(sender, expression, default));
         }
 
         if (expression.NodeType == ExpressionType.Index)
         {
             return obs.Where(x => x.PropertyName?.Equals(propertyName + "[]", StringComparison.InvariantCulture) == true)
-                      .Select(_ => new ObservedChange<object, object?>(sender, expression, default!));
+                      .Select(_ => new ObservedChange<object, object?>(sender, expression, default));
         }
 
         return obs.Where(x => x.PropertyName?.Equals(propertyName, StringComparison.InvariantCulture) == true)
-                  .Select(_ => new ObservedChange<object, object?>(sender, expression, default!));
+                  .Select(_ => new ObservedChange<object, object?>(sender, expression, default));
     }
 }

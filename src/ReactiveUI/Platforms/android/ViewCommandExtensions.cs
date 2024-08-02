@@ -1,14 +1,10 @@
-// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+// Copyright (c) 2024 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Disposables;
-using System.Text;
 using System.Windows.Input;
+
 using Android.Views;
 
 namespace ReactiveUI;
@@ -26,15 +22,8 @@ public static class ViewCommandExtensions
     /// <returns>A disposable.</returns>
     public static IDisposable BindToTarget(this ICommand command, View control) // TODO: Create Test
     {
-        if (command is null)
-        {
-            throw new ArgumentNullException(nameof(command));
-        }
-
-        if (control is null)
-        {
-            throw new ArgumentNullException(nameof(control));
-        }
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(control);
 
         var ev = new EventHandler((o, e) =>
         {
@@ -46,10 +35,7 @@ public static class ViewCommandExtensions
             command.Execute(null);
         });
 
-        var cech = new EventHandler((o, e) =>
-        {
-            control.Enabled = command.CanExecute(null);
-        });
+        var cech = new EventHandler((o, e) => control.Enabled = command.CanExecute(null));
 
         command.CanExecuteChanged += cech;
         control.Click += ev;
